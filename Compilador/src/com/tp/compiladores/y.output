@@ -1,0 +1,4115 @@
+   0  $accept : Programa $end
+
+   1  Programa : Nombre_programa '{' ListSentencias '}'
+   2           | Nombre_programa ListSentencias '}'
+   3           | Nombre_programa ListSentencias
+   4           | error '}'
+
+   5  Nombre_programa : ID
+
+   6  ListSentencias : SentenciaControl ListSentencias
+   7                 | SentenciaDeclarativa ListSentencias
+   8                 | SentenciaEjecutable ListSentencias
+   9                 | SentenciaEjecutable
+  10                 | SentenciaControl
+  11                 | SentenciaDeclarativa
+
+  12  SentenciaDeclarativa : Tipo ListVariables ';'
+  13                       | Tipo error ';'
+  14                       | Funcion
+  15                       | CONST ListCte ';'
+  16                       | WhenCondicion
+  17                       | ListVariables ';'
+  18                       | Tipo ';'
+
+  19  ListCte : AsigCte
+  20          | ListCte ',' AsigCte
+
+  21  AsigCte : ID ASIGNACION CTE_ENTERA
+  22          | ID ASIGNACION signo CTE_ENTERA
+  23          | ID ASIGNACION CTE_FLOTANTE
+  24          | ID ASIGNACION signo CTE_FLOTANTE
+  25          | ASIGNACION cte
+  26          | ID ASIGNACION
+  27          | ID cte
+
+  28  Tipo : I8
+  29       | F32
+
+  30  ListVariables : ID ',' ListVariables
+  31                | ID
+  32                | ID ListVariables
+
+  33  HeaderFuncion : Fun '(' Parametro ',' Parametro ')' ':' Tipo
+  34                | Fun '(' Parametro ')' ':' Tipo
+  35                | Fun '(' ')' ':' Tipo
+  36                | FUN '(' Parametro ',' Parametro ')' ':' Tipo
+  37                | FUN '(' Parametro ')' ':' Tipo
+  38                | FUN '(' ')' ':' Tipo
+  39                | Fun '(' Parametro ',' Parametro ')' ':'
+  40                | Fun '(' Parametro ')' ':'
+  41                | Fun '(' ')' ':'
+
+  42  Fun : FUN ID
+
+  43  Funcion : HeaderFuncion '{' Cuerpo '}'
+  44          | HeaderFuncion '{' '}'
+  45          | '{' Cuerpo '}'
+  46          | HeaderFuncion '{' ListSentencias '}'
+
+  47  Parametro : Tipo ID
+  48            | ID
+
+  49  Cuerpo : SentenciaEjecutable Cuerpo
+  50         | SentenciaDeclarativa Cuerpo
+  51         | SentenciaReturn
+
+  52  SentenciaEjecutable : Seleccion
+  53                      | Asig
+  54                      | Salida ';'
+
+  55  Asig : ID ASIGNACION Expresion ';'
+  56       | ID ASIGNACION ID ';'
+  57       | ID ASIGNACION cte ';'
+  58       | ID ASIGNACION signo cte ';'
+  59       | ID error ';'
+
+  60  HeaderWhen : WHEN Condicion THEN
+  61             | Condicion THEN
+  62             | WHEN Condicion
+
+  63  WhenCondicion : HeaderWhen '{' ListSentencias '}'
+  64                | error '}'
+
+  65  Salida : OUT '(' CADENA_MULT ')'
+  66         | '(' CADENA_MULT ')'
+
+  67  ParametroReal : cte
+  68                | signo cte
+  69                | ID
+
+  70  Expresion : ID signo ID
+  71            | ID signo cte
+  72            | Expresion signo ID
+  73            | Expresion signo cte
+  74            | ID '*' ID
+  75            | ID '/' ID
+  76            | ID '*' cte
+  77            | ID '/' cte
+  78            | Expresion '*' ID
+  79            | Expresion '/' ID
+  80            | Expresion '*' cte
+  81            | Expresion '/' cte
+  82            | ConversionExplicita
+  83            | cte signo ID
+  84            | cte '*' ID
+  85            | cte '/' ID
+  86            | ID ListParametrosInv
+
+  87  ListParametrosInv : '(' ')'
+  88                    | '(' ParametroReal ')'
+  89                    | '(' ParametroReal ',' ParametroReal ')'
+
+  90  ConversionExplicita : TOF32 '(' Expresion ')'
+  91                      | TOF32 '(' ')'
+
+  92  signo : '+'
+  93        | '-'
+
+  94  cte : CTE_FLOTANTE
+  95      | CTE_ENTERA
+
+  96  SentenciaReturn : RETURN '(' ID ')' ';'
+  97                  | RETURN '(' cte ')' ';'
+  98                  | RETURN '(' Expresion ')' ';'
+  99                  | RETURN '(' ID ')'
+ 100                  | RETURN '(' cte ')'
+ 101                  | RETURN '(' Expresion ')'
+ 102                  | RETURN ';'
+
+ 103  ListSentenciasIf : SentenciaEjecutable ListSentenciasIf
+ 104                   | SentenciaCorte ListSentenciasIf
+ 105                   | SentenciaEjecutable
+ 106                   | SentenciaCorte
+
+ 107  HeaderIf : IF Condicion THEN
+ 108           | error THEN
+
+ 109  SentenciasIf : SentenciaEjecutable
+ 110               | '{' ListSentenciasIf '}'
+
+ 111  CuerpoIf : SentenciasIf
+
+ 112  CuerpoElse : ELSE CuerpoIf END_IF
+ 113             | ELSE CuerpoIf error
+
+ 114  Seleccion : HeaderIf CuerpoIf END_IF
+ 115            | HeaderIf CuerpoIf CuerpoElse
+ 116            | HeaderIf CuerpoIf error
+ 117            | error ELSE
+ 118            | error END_IF
+
+ 119  Condicion : '(' Comparacion ')'
+ 120            | '(' Comparacion
+ 121            | Comparacion ')'
+
+ 122  Comparador : '<'
+ 123             | '>'
+ 124             | MAYOR_IGUAL
+ 125             | MENOR_IGUAL
+ 126             | '='
+ 127             | DISTINTO
+
+ 128  Comparacion : Expresion Comparador Expresion
+ 129              | Expresion Comparador cte
+ 130              | Expresion Comparador signo cte
+ 131              | cte Comparador Expresion
+ 132              | signo cte Comparador Expresion
+ 133              | Expresion Comparador ID
+ 134              | ID Comparador Expresion
+ 135              | cte Comparador ID
+ 136              | signo cte Comparador ID
+ 137              | ID Comparador cte
+ 138              | ID Comparador signo cte
+ 139              | ID Comparador ID
+ 140              | cte Comparador cte
+ 141              | Comparador error
+ 142              | error ID
+ 143              | error cte
+
+ 144  ListSentenciasFor : ListSentenciasFor SentenciaEjecutable
+ 145                    | ListSentenciasFor SentenciaControl
+ 146                    | ListSentenciasFor SentenciaCorte
+ 147                    | SentenciaControl
+ 148                    | SentenciaEjecutable
+ 149                    | SentenciaCorte
+
+ 150  HeaderFor : FOR '(' AsigFor ';' CondicionFor ';' signo CTE_ENTERA ')'
+
+ 151  HeaderForID : ID ':' HeaderFor
+ 152              | ID ASIGNACION HeaderFor
+
+ 153  AsigFor : ID ASIGNACION CTE_ENTERA
+ 154          | ID ASIGNACION ID
+
+ 155  BucleFor : '{' ListSentenciasFor '}'
+ 156           | '{' '}' ';'
+
+ 157  SentenciaControl : HeaderFor BucleFor
+ 158                   | HeaderForID '{' ListSentenciasFor '}' ELSE cte ';'
+ 159                   | HeaderForID '{' ListSentenciasFor '}' ELSE signo cte ';'
+ 160                   | ID ASIGNACION BucleFor ELSE signo cte ';'
+ 161                   | ID ASIGNACION HeaderFor '{' '}' ELSE cte ';'
+
+ 162  CondicionFor : ID Comparador ID
+ 163               | ID Comparador Expresion
+ 164               | ID Comparador CTE_ENTERA
+ 165               | ID Comparador signo CTE_ENTERA
+
+ 166  SentenciaCorte : SentenciaReturn
+ 167                 | BREAK ';'
+ 168                 | BREAK cte ';'
+ 169                 | BREAK signo cte ';'
+ 170                 | CONTINUE ':' ID ';'
+
+state 0
+	$accept : . Programa $end  (0)
+
+	error  shift 1
+	ID  shift 2
+	.  error
+
+	Programa  goto 3
+	Nombre_programa  goto 4
+
+
+state 1
+	Programa : error . '}'  (4)
+
+	'}'  shift 5
+	.  error
+
+
+state 2
+	Nombre_programa : ID .  (5)
+
+	.  reduce 5
+
+
+state 3
+	$accept : Programa . $end  (0)
+
+	$end  accept
+
+
+state 4
+	Programa : Nombre_programa . '{' ListSentencias '}'  (1)
+	Programa : Nombre_programa . ListSentencias '}'  (2)
+	Programa : Nombre_programa . ListSentencias  (3)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 15
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	FOR  shift 21
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 24
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	ListSentencias  goto 29
+	SentenciaControl  goto 30
+	SentenciaDeclarativa  goto 31
+	SentenciaEjecutable  goto 32
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 5
+	Programa : error '}' .  (4)
+
+	.  reduce 4
+
+
+state 6
+	WhenCondicion : error . '}'  (64)
+	HeaderIf : error . THEN  (108)
+	Seleccion : error . ELSE  (117)
+	Seleccion : error . END_IF  (118)
+	Comparacion : error . ID  (142)
+	Comparacion : error . cte  (143)
+
+	THEN  shift 53
+	ELSE  shift 54
+	END_IF  shift 55
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 56
+	'}'  shift 57
+	.  error
+
+	cte  goto 58
+
+
+state 7
+	HeaderIf : IF . Condicion THEN  (107)
+
+	error  shift 59
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 60
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	'('  shift 61
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	signo  goto 37
+	cte  goto 38
+	Expresion  goto 44
+	Condicion  goto 62
+	ConversionExplicita  goto 47
+	Comparacion  goto 49
+	Comparador  goto 50
+
+
+state 8
+	Salida : OUT . '(' CADENA_MULT ')'  (65)
+
+	'('  shift 63
+	.  error
+
+
+state 9
+	HeaderFuncion : FUN . '(' Parametro ',' Parametro ')' ':' Tipo  (36)
+	HeaderFuncion : FUN . '(' Parametro ')' ':' Tipo  (37)
+	HeaderFuncion : FUN . '(' ')' ':' Tipo  (38)
+	Fun : FUN . ID  (42)
+
+	ID  shift 64
+	'('  shift 65
+	.  error
+
+
+state 10
+	Tipo : I8 .  (28)
+
+	.  reduce 28
+
+
+state 11
+	Tipo : F32 .  (29)
+
+	.  reduce 29
+
+
+state 12
+	HeaderWhen : WHEN . Condicion THEN  (60)
+	HeaderWhen : WHEN . Condicion  (62)
+
+	error  shift 59
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 60
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	'('  shift 61
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	signo  goto 37
+	cte  goto 38
+	Expresion  goto 44
+	Condicion  goto 66
+	ConversionExplicita  goto 47
+	Comparacion  goto 49
+	Comparador  goto 50
+
+
+state 13
+	cte : CTE_ENTERA .  (95)
+
+	.  reduce 95
+
+
+state 14
+	cte : CTE_FLOTANTE .  (94)
+
+	.  reduce 94
+
+
+state 15
+	ListVariables : ID . ',' ListVariables  (30)
+	ListVariables : ID .  (31)
+	ListVariables : ID . ListVariables  (32)
+	Asig : ID . ASIGNACION Expresion ';'  (55)
+	Asig : ID . ASIGNACION ID ';'  (56)
+	Asig : ID . ASIGNACION cte ';'  (57)
+	Asig : ID . ASIGNACION signo cte ';'  (58)
+	Asig : ID . error ';'  (59)
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+	Comparacion : ID . Comparador Expresion  (134)
+	Comparacion : ID . Comparador cte  (137)
+	Comparacion : ID . Comparador signo cte  (138)
+	Comparacion : ID . Comparador ID  (139)
+	HeaderForID : ID . ':' HeaderFor  (151)
+	HeaderForID : ID . ASIGNACION HeaderFor  (152)
+	SentenciaControl : ID . ASIGNACION BucleFor ELSE signo cte ';'  (160)
+	SentenciaControl : ID . ASIGNACION HeaderFor '{' '}' ELSE cte ';'  (161)
+
+	error  shift 67
+	ID  shift 68
+	ASIGNACION  shift 69
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	','  shift 72
+	'('  shift 73
+	':'  shift 74
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	';'  reduce 31
+
+	ListVariables  goto 75
+	signo  goto 76
+	ListParametrosInv  goto 77
+	Comparador  goto 78
+
+
+state 16
+	Comparador : MAYOR_IGUAL .  (124)
+
+	.  reduce 124
+
+
+state 17
+	Comparador : MENOR_IGUAL .  (125)
+
+	.  reduce 125
+
+
+state 18
+	Comparador : DISTINTO .  (127)
+
+	.  reduce 127
+
+
+state 19
+	SentenciaDeclarativa : CONST . ListCte ';'  (15)
+
+	ID  shift 79
+	ASIGNACION  shift 80
+	.  error
+
+	ListCte  goto 81
+	AsigCte  goto 82
+
+
+state 20
+	ConversionExplicita : TOF32 . '(' Expresion ')'  (90)
+	ConversionExplicita : TOF32 . '(' ')'  (91)
+
+	'('  shift 83
+	.  error
+
+
+state 21
+	HeaderFor : FOR . '(' AsigFor ';' CondicionFor ';' signo CTE_ENTERA ')'  (150)
+
+	'('  shift 84
+	.  error
+
+
+state 22
+	signo : '+' .  (92)
+
+	.  reduce 92
+
+
+state 23
+	signo : '-' .  (93)
+
+	.  reduce 93
+
+
+state 24
+	Programa : Nombre_programa '{' . ListSentencias '}'  (1)
+	Funcion : '{' . Cuerpo '}'  (45)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	RETURN  shift 85
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 15
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	FOR  shift 21
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	ListSentencias  goto 87
+	SentenciaControl  goto 30
+	SentenciaDeclarativa  goto 88
+	SentenciaEjecutable  goto 89
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Cuerpo  goto 90
+	SentenciaReturn  goto 91
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 25
+	Salida : '(' . CADENA_MULT ')'  (66)
+	Condicion : '(' . Comparacion ')'  (119)
+	Condicion : '(' . Comparacion  (120)
+
+	error  shift 59
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 60
+	CADENA_MULT  shift 92
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	signo  goto 37
+	cte  goto 38
+	Expresion  goto 44
+	ConversionExplicita  goto 47
+	Comparacion  goto 93
+	Comparador  goto 50
+
+
+state 26
+	Comparador : '<' .  (122)
+
+	.  reduce 122
+
+
+state 27
+	Comparador : '>' .  (123)
+
+	.  reduce 123
+
+
+state 28
+	Comparador : '=' .  (126)
+
+	.  reduce 126
+
+
+state 29
+	Programa : Nombre_programa ListSentencias . '}'  (2)
+	Programa : Nombre_programa ListSentencias .  (3)
+
+	'}'  shift 94
+	$end  reduce 3
+
+
+state 30
+	ListSentencias : SentenciaControl . ListSentencias  (6)
+	ListSentencias : SentenciaControl .  (10)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 15
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	FOR  shift 21
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	$end  reduce 10
+	'}'  reduce 10
+
+	ListSentencias  goto 95
+	SentenciaControl  goto 30
+	SentenciaDeclarativa  goto 31
+	SentenciaEjecutable  goto 32
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 31
+	ListSentencias : SentenciaDeclarativa . ListSentencias  (7)
+	ListSentencias : SentenciaDeclarativa .  (11)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 15
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	FOR  shift 21
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	$end  reduce 11
+	'}'  reduce 11
+
+	ListSentencias  goto 96
+	SentenciaControl  goto 30
+	SentenciaDeclarativa  goto 31
+	SentenciaEjecutable  goto 32
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 32
+	ListSentencias : SentenciaEjecutable . ListSentencias  (8)
+	ListSentencias : SentenciaEjecutable .  (9)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 15
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	FOR  shift 21
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	$end  reduce 9
+	'}'  reduce 9
+
+	ListSentencias  goto 97
+	SentenciaControl  goto 30
+	SentenciaDeclarativa  goto 31
+	SentenciaEjecutable  goto 32
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 33
+	SentenciaDeclarativa : Tipo . ListVariables ';'  (12)
+	SentenciaDeclarativa : Tipo . error ';'  (13)
+	SentenciaDeclarativa : Tipo . ';'  (18)
+
+	error  shift 98
+	ID  shift 68
+	';'  shift 99
+	.  error
+
+	ListVariables  goto 100
+
+
+state 34
+	SentenciaDeclarativa : ListVariables . ';'  (17)
+
+	';'  shift 101
+	.  error
+
+
+state 35
+	SentenciaDeclarativa : Funcion .  (14)
+
+	.  reduce 14
+
+
+state 36
+	SentenciaDeclarativa : WhenCondicion .  (16)
+
+	.  reduce 16
+
+
+state 37
+	Comparacion : signo . cte Comparador Expresion  (132)
+	Comparacion : signo . cte Comparador ID  (136)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	.  error
+
+	cte  goto 102
+
+
+state 38
+	Expresion : cte . signo ID  (83)
+	Expresion : cte . '*' ID  (84)
+	Expresion : cte . '/' ID  (85)
+	Comparacion : cte . Comparador Expresion  (131)
+	Comparacion : cte . Comparador ID  (135)
+	Comparacion : cte . Comparador cte  (140)
+
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 103
+	'/'  shift 104
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	signo  goto 105
+	Comparador  goto 106
+
+
+state 39
+	Funcion : HeaderFuncion . '{' Cuerpo '}'  (43)
+	Funcion : HeaderFuncion . '{' '}'  (44)
+	Funcion : HeaderFuncion . '{' ListSentencias '}'  (46)
+
+	'{'  shift 107
+	.  error
+
+
+state 40
+	HeaderFuncion : Fun . '(' Parametro ',' Parametro ')' ':' Tipo  (33)
+	HeaderFuncion : Fun . '(' Parametro ')' ':' Tipo  (34)
+	HeaderFuncion : Fun . '(' ')' ':' Tipo  (35)
+	HeaderFuncion : Fun . '(' Parametro ',' Parametro ')' ':'  (39)
+	HeaderFuncion : Fun . '(' Parametro ')' ':'  (40)
+	HeaderFuncion : Fun . '(' ')' ':'  (41)
+
+	'('  shift 108
+	.  error
+
+
+state 41
+	SentenciaEjecutable : Seleccion .  (52)
+
+	.  reduce 52
+
+
+state 42
+	SentenciaEjecutable : Asig .  (53)
+
+	.  reduce 53
+
+
+state 43
+	SentenciaEjecutable : Salida . ';'  (54)
+
+	';'  shift 109
+	.  error
+
+
+state 44
+	Expresion : Expresion . signo ID  (72)
+	Expresion : Expresion . signo cte  (73)
+	Expresion : Expresion . '*' ID  (78)
+	Expresion : Expresion . '/' ID  (79)
+	Expresion : Expresion . '*' cte  (80)
+	Expresion : Expresion . '/' cte  (81)
+	Comparacion : Expresion . Comparador Expresion  (128)
+	Comparacion : Expresion . Comparador cte  (129)
+	Comparacion : Expresion . Comparador signo cte  (130)
+	Comparacion : Expresion . Comparador ID  (133)
+
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 110
+	'/'  shift 111
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	signo  goto 112
+	Comparador  goto 113
+
+
+state 45
+	WhenCondicion : HeaderWhen . '{' ListSentencias '}'  (63)
+
+	'{'  shift 114
+	.  error
+
+
+state 46
+	HeaderWhen : Condicion . THEN  (61)
+
+	THEN  shift 115
+	.  error
+
+
+state 47
+	Expresion : ConversionExplicita .  (82)
+
+	.  reduce 82
+
+
+state 48
+	Seleccion : HeaderIf . CuerpoIf END_IF  (114)
+	Seleccion : HeaderIf . CuerpoIf CuerpoElse  (115)
+	Seleccion : HeaderIf . CuerpoIf error  (116)
+
+	error  shift 116
+	IF  shift 7
+	OUT  shift 8
+	ID  shift 117
+	'{'  shift 118
+	'('  shift 119
+	.  error
+
+	SentenciaEjecutable  goto 120
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	HeaderIf  goto 48
+	SentenciasIf  goto 121
+	CuerpoIf  goto 122
+
+
+state 49
+	Condicion : Comparacion . ')'  (121)
+
+	')'  shift 123
+	.  error
+
+
+state 50
+	Comparacion : Comparador . error  (141)
+
+	error  shift 124
+	.  error
+
+
+state 51
+	SentenciaControl : HeaderFor . BucleFor  (157)
+
+	'{'  shift 125
+	.  error
+
+	BucleFor  goto 126
+
+
+state 52
+	SentenciaControl : HeaderForID . '{' ListSentenciasFor '}' ELSE cte ';'  (158)
+	SentenciaControl : HeaderForID . '{' ListSentenciasFor '}' ELSE signo cte ';'  (159)
+
+	'{'  shift 127
+	.  error
+
+
+state 53
+	HeaderIf : error THEN .  (108)
+
+	.  reduce 108
+
+
+state 54
+	Seleccion : error ELSE .  (117)
+
+	.  reduce 117
+
+
+state 55
+	Seleccion : error END_IF .  (118)
+
+	.  reduce 118
+
+
+state 56
+	Comparacion : error ID .  (142)
+
+	.  reduce 142
+
+
+state 57
+	WhenCondicion : error '}' .  (64)
+
+	.  reduce 64
+
+
+state 58
+	Comparacion : error cte .  (143)
+
+	.  reduce 143
+
+
+state 59
+	Comparacion : error . ID  (142)
+	Comparacion : error . cte  (143)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 56
+	.  error
+
+	cte  goto 58
+
+
+state 60
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+	Comparacion : ID . Comparador Expresion  (134)
+	Comparacion : ID . Comparador cte  (137)
+	Comparacion : ID . Comparador signo cte  (138)
+	Comparacion : ID . Comparador ID  (139)
+
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	'('  shift 73
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	signo  goto 76
+	ListParametrosInv  goto 77
+	Comparador  goto 78
+
+
+state 61
+	Condicion : '(' . Comparacion ')'  (119)
+	Condicion : '(' . Comparacion  (120)
+
+	error  shift 59
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 60
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	signo  goto 37
+	cte  goto 38
+	Expresion  goto 44
+	ConversionExplicita  goto 47
+	Comparacion  goto 93
+	Comparador  goto 50
+
+
+state 62
+	HeaderIf : IF Condicion . THEN  (107)
+
+	THEN  shift 128
+	.  error
+
+
+state 63
+	Salida : OUT '(' . CADENA_MULT ')'  (65)
+
+	CADENA_MULT  shift 129
+	.  error
+
+
+state 64
+	Fun : FUN ID .  (42)
+
+	.  reduce 42
+
+
+state 65
+	HeaderFuncion : FUN '(' . Parametro ',' Parametro ')' ':' Tipo  (36)
+	HeaderFuncion : FUN '(' . Parametro ')' ':' Tipo  (37)
+	HeaderFuncion : FUN '(' . ')' ':' Tipo  (38)
+
+	I8  shift 10
+	F32  shift 11
+	ID  shift 130
+	')'  shift 131
+	.  error
+
+	Tipo  goto 132
+	Parametro  goto 133
+
+
+state 66
+	HeaderWhen : WHEN Condicion . THEN  (60)
+	HeaderWhen : WHEN Condicion .  (62)
+
+	THEN  shift 134
+	'{'  reduce 62
+
+
+state 67
+	Asig : ID error . ';'  (59)
+
+	';'  shift 135
+	.  error
+
+
+state 68
+	ListVariables : ID . ',' ListVariables  (30)
+	ListVariables : ID .  (31)
+	ListVariables : ID . ListVariables  (32)
+
+	ID  shift 68
+	','  shift 72
+	';'  reduce 31
+
+	ListVariables  goto 75
+
+
+state 69
+	Asig : ID ASIGNACION . Expresion ';'  (55)
+	Asig : ID ASIGNACION . ID ';'  (56)
+	Asig : ID ASIGNACION . cte ';'  (57)
+	Asig : ID ASIGNACION . signo cte ';'  (58)
+	HeaderForID : ID ASIGNACION . HeaderFor  (152)
+	SentenciaControl : ID ASIGNACION . BucleFor ELSE signo cte ';'  (160)
+	SentenciaControl : ID ASIGNACION . HeaderFor '{' '}' ELSE cte ';'  (161)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 136
+	TOF32  shift 20
+	FOR  shift 21
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 125
+	.  error
+
+	signo  goto 137
+	cte  goto 138
+	Expresion  goto 139
+	ConversionExplicita  goto 47
+	HeaderFor  goto 140
+	BucleFor  goto 141
+
+
+state 70
+	Expresion : ID '*' . ID  (74)
+	Expresion : ID '*' . cte  (76)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 142
+	.  error
+
+	cte  goto 143
+
+
+state 71
+	Expresion : ID '/' . ID  (75)
+	Expresion : ID '/' . cte  (77)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 144
+	.  error
+
+	cte  goto 145
+
+
+state 72
+	ListVariables : ID ',' . ListVariables  (30)
+
+	ID  shift 68
+	.  error
+
+	ListVariables  goto 146
+
+
+state 73
+	ListParametrosInv : '(' . ')'  (87)
+	ListParametrosInv : '(' . ParametroReal ')'  (88)
+	ListParametrosInv : '(' . ParametroReal ',' ParametroReal ')'  (89)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 147
+	'+'  shift 22
+	'-'  shift 23
+	')'  shift 148
+	.  error
+
+	signo  goto 149
+	cte  goto 150
+	ParametroReal  goto 151
+
+
+state 74
+	HeaderForID : ID ':' . HeaderFor  (151)
+
+	FOR  shift 21
+	.  error
+
+	HeaderFor  goto 152
+
+
+state 75
+	ListVariables : ID ListVariables .  (32)
+
+	.  reduce 32
+
+
+state 76
+	Expresion : ID signo . ID  (70)
+	Expresion : ID signo . cte  (71)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 153
+	.  error
+
+	cte  goto 154
+
+
+state 77
+	Expresion : ID ListParametrosInv .  (86)
+
+	.  reduce 86
+
+
+state 78
+	Comparacion : ID Comparador . Expresion  (134)
+	Comparacion : ID Comparador . cte  (137)
+	Comparacion : ID Comparador . signo cte  (138)
+	Comparacion : ID Comparador . ID  (139)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 155
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	.  error
+
+	signo  goto 156
+	cte  goto 157
+	Expresion  goto 158
+	ConversionExplicita  goto 47
+
+
+state 79
+	AsigCte : ID . ASIGNACION CTE_ENTERA  (21)
+	AsigCte : ID . ASIGNACION signo CTE_ENTERA  (22)
+	AsigCte : ID . ASIGNACION CTE_FLOTANTE  (23)
+	AsigCte : ID . ASIGNACION signo CTE_FLOTANTE  (24)
+	AsigCte : ID . ASIGNACION  (26)
+	AsigCte : ID . cte  (27)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ASIGNACION  shift 159
+	.  error
+
+	cte  goto 160
+
+
+state 80
+	AsigCte : ASIGNACION . cte  (25)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	.  error
+
+	cte  goto 161
+
+
+state 81
+	SentenciaDeclarativa : CONST ListCte . ';'  (15)
+	ListCte : ListCte . ',' AsigCte  (20)
+
+	';'  shift 162
+	','  shift 163
+	.  error
+
+
+state 82
+	ListCte : AsigCte .  (19)
+
+	.  reduce 19
+
+
+state 83
+	ConversionExplicita : TOF32 '(' . Expresion ')'  (90)
+	ConversionExplicita : TOF32 '(' . ')'  (91)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 164
+	TOF32  shift 20
+	')'  shift 165
+	.  error
+
+	cte  goto 166
+	Expresion  goto 167
+	ConversionExplicita  goto 47
+
+
+state 84
+	HeaderFor : FOR '(' . AsigFor ';' CondicionFor ';' signo CTE_ENTERA ')'  (150)
+
+	ID  shift 168
+	.  error
+
+	AsigFor  goto 169
+
+
+state 85
+	SentenciaReturn : RETURN . '(' ID ')' ';'  (96)
+	SentenciaReturn : RETURN . '(' cte ')' ';'  (97)
+	SentenciaReturn : RETURN . '(' Expresion ')' ';'  (98)
+	SentenciaReturn : RETURN . '(' ID ')'  (99)
+	SentenciaReturn : RETURN . '(' cte ')'  (100)
+	SentenciaReturn : RETURN . '(' Expresion ')'  (101)
+	SentenciaReturn : RETURN . ';'  (102)
+
+	';'  shift 170
+	'('  shift 171
+	.  error
+
+
+state 86
+	Funcion : '{' . Cuerpo '}'  (45)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	RETURN  shift 85
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 172
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	SentenciaDeclarativa  goto 173
+	SentenciaEjecutable  goto 174
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Cuerpo  goto 90
+	SentenciaReturn  goto 91
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+
+
+state 87
+	Programa : Nombre_programa '{' ListSentencias . '}'  (1)
+
+	'}'  shift 175
+	.  error
+
+
+state 88
+	ListSentencias : SentenciaDeclarativa . ListSentencias  (7)
+	ListSentencias : SentenciaDeclarativa .  (11)
+	Cuerpo : SentenciaDeclarativa . Cuerpo  (50)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	RETURN  shift 85
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 15
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	FOR  shift 21
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	'}'  reduce 11
+
+	ListSentencias  goto 96
+	SentenciaControl  goto 30
+	SentenciaDeclarativa  goto 88
+	SentenciaEjecutable  goto 89
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Cuerpo  goto 176
+	SentenciaReturn  goto 91
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 89
+	ListSentencias : SentenciaEjecutable . ListSentencias  (8)
+	ListSentencias : SentenciaEjecutable .  (9)
+	Cuerpo : SentenciaEjecutable . Cuerpo  (49)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	RETURN  shift 85
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 15
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	FOR  shift 21
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	'}'  reduce 9
+
+	ListSentencias  goto 97
+	SentenciaControl  goto 30
+	SentenciaDeclarativa  goto 88
+	SentenciaEjecutable  goto 89
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Cuerpo  goto 177
+	SentenciaReturn  goto 91
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 90
+	Funcion : '{' Cuerpo . '}'  (45)
+
+	'}'  shift 178
+	.  error
+
+
+state 91
+	Cuerpo : SentenciaReturn .  (51)
+
+	.  reduce 51
+
+
+state 92
+	Salida : '(' CADENA_MULT . ')'  (66)
+
+	')'  shift 179
+	.  error
+
+
+state 93
+	Condicion : '(' Comparacion . ')'  (119)
+	Condicion : '(' Comparacion .  (120)
+
+	')'  shift 180
+	THEN  reduce 120
+	'{'  reduce 120
+
+
+state 94
+	Programa : Nombre_programa ListSentencias '}' .  (2)
+
+	.  reduce 2
+
+
+state 95
+	ListSentencias : SentenciaControl ListSentencias .  (6)
+
+	.  reduce 6
+
+
+state 96
+	ListSentencias : SentenciaDeclarativa ListSentencias .  (7)
+
+	.  reduce 7
+
+
+state 97
+	ListSentencias : SentenciaEjecutable ListSentencias .  (8)
+
+	.  reduce 8
+
+
+state 98
+	SentenciaDeclarativa : Tipo error . ';'  (13)
+
+	';'  shift 181
+	.  error
+
+
+state 99
+	SentenciaDeclarativa : Tipo ';' .  (18)
+
+	.  reduce 18
+
+
+state 100
+	SentenciaDeclarativa : Tipo ListVariables . ';'  (12)
+
+	';'  shift 182
+	.  error
+
+
+state 101
+	SentenciaDeclarativa : ListVariables ';' .  (17)
+
+	.  reduce 17
+
+
+state 102
+	Comparacion : signo cte . Comparador Expresion  (132)
+	Comparacion : signo cte . Comparador ID  (136)
+
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	Comparador  goto 183
+
+
+state 103
+	Expresion : cte '*' . ID  (84)
+
+	ID  shift 184
+	.  error
+
+
+state 104
+	Expresion : cte '/' . ID  (85)
+
+	ID  shift 185
+	.  error
+
+
+state 105
+	Expresion : cte signo . ID  (83)
+
+	ID  shift 186
+	.  error
+
+
+state 106
+	Comparacion : cte Comparador . Expresion  (131)
+	Comparacion : cte Comparador . ID  (135)
+	Comparacion : cte Comparador . cte  (140)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 187
+	TOF32  shift 20
+	.  error
+
+	cte  goto 188
+	Expresion  goto 189
+	ConversionExplicita  goto 47
+
+
+state 107
+	Funcion : HeaderFuncion '{' . Cuerpo '}'  (43)
+	Funcion : HeaderFuncion '{' . '}'  (44)
+	Funcion : HeaderFuncion '{' . ListSentencias '}'  (46)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	RETURN  shift 85
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 15
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	FOR  shift 21
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'}'  shift 190
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	ListSentencias  goto 191
+	SentenciaControl  goto 30
+	SentenciaDeclarativa  goto 88
+	SentenciaEjecutable  goto 89
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Cuerpo  goto 192
+	SentenciaReturn  goto 91
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 108
+	HeaderFuncion : Fun '(' . Parametro ',' Parametro ')' ':' Tipo  (33)
+	HeaderFuncion : Fun '(' . Parametro ')' ':' Tipo  (34)
+	HeaderFuncion : Fun '(' . ')' ':' Tipo  (35)
+	HeaderFuncion : Fun '(' . Parametro ',' Parametro ')' ':'  (39)
+	HeaderFuncion : Fun '(' . Parametro ')' ':'  (40)
+	HeaderFuncion : Fun '(' . ')' ':'  (41)
+
+	I8  shift 10
+	F32  shift 11
+	ID  shift 130
+	')'  shift 193
+	.  error
+
+	Tipo  goto 132
+	Parametro  goto 194
+
+
+state 109
+	SentenciaEjecutable : Salida ';' .  (54)
+
+	.  reduce 54
+
+
+state 110
+	Expresion : Expresion '*' . ID  (78)
+	Expresion : Expresion '*' . cte  (80)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 195
+	.  error
+
+	cte  goto 196
+
+
+state 111
+	Expresion : Expresion '/' . ID  (79)
+	Expresion : Expresion '/' . cte  (81)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 197
+	.  error
+
+	cte  goto 198
+
+
+state 112
+	Expresion : Expresion signo . ID  (72)
+	Expresion : Expresion signo . cte  (73)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 199
+	.  error
+
+	cte  goto 200
+
+
+state 113
+	Comparacion : Expresion Comparador . Expresion  (128)
+	Comparacion : Expresion Comparador . cte  (129)
+	Comparacion : Expresion Comparador . signo cte  (130)
+	Comparacion : Expresion Comparador . ID  (133)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 201
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	.  error
+
+	signo  goto 202
+	cte  goto 203
+	Expresion  goto 204
+	ConversionExplicita  goto 47
+
+
+state 114
+	WhenCondicion : HeaderWhen '{' . ListSentencias '}'  (63)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 15
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	FOR  shift 21
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	ListSentencias  goto 205
+	SentenciaControl  goto 30
+	SentenciaDeclarativa  goto 31
+	SentenciaEjecutable  goto 32
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 115
+	HeaderWhen : Condicion THEN .  (61)
+
+	.  reduce 61
+
+
+state 116
+	HeaderIf : error . THEN  (108)
+	Seleccion : error . ELSE  (117)
+	Seleccion : error . END_IF  (118)
+
+	THEN  shift 53
+	ELSE  shift 54
+	END_IF  shift 55
+	.  error
+
+
+state 117
+	Asig : ID . ASIGNACION Expresion ';'  (55)
+	Asig : ID . ASIGNACION ID ';'  (56)
+	Asig : ID . ASIGNACION cte ';'  (57)
+	Asig : ID . ASIGNACION signo cte ';'  (58)
+	Asig : ID . error ';'  (59)
+
+	error  shift 67
+	ASIGNACION  shift 206
+	.  error
+
+
+state 118
+	SentenciasIf : '{' . ListSentenciasIf '}'  (110)
+
+	error  shift 116
+	IF  shift 7
+	OUT  shift 8
+	RETURN  shift 85
+	ID  shift 117
+	CONTINUE  shift 207
+	BREAK  shift 208
+	'('  shift 119
+	.  error
+
+	SentenciaEjecutable  goto 209
+	SentenciaReturn  goto 210
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	ListSentenciasIf  goto 211
+	SentenciaCorte  goto 212
+	HeaderIf  goto 48
+
+
+state 119
+	Salida : '(' . CADENA_MULT ')'  (66)
+
+	CADENA_MULT  shift 92
+	.  error
+
+
+state 120
+	SentenciasIf : SentenciaEjecutable .  (109)
+
+	.  reduce 109
+
+
+state 121
+	CuerpoIf : SentenciasIf .  (111)
+
+	.  reduce 111
+
+
+state 122
+	Seleccion : HeaderIf CuerpoIf . END_IF  (114)
+	Seleccion : HeaderIf CuerpoIf . CuerpoElse  (115)
+	Seleccion : HeaderIf CuerpoIf . error  (116)
+
+	error  shift 213
+	ELSE  shift 214
+	END_IF  shift 215
+	.  error
+
+	CuerpoElse  goto 216
+
+
+state 123
+	Condicion : Comparacion ')' .  (121)
+
+	.  reduce 121
+
+
+state 124
+	Comparacion : Comparador error .  (141)
+
+	.  reduce 141
+
+
+state 125
+	BucleFor : '{' . ListSentenciasFor '}'  (155)
+	BucleFor : '{' . '}' ';'  (156)
+
+	error  shift 116
+	IF  shift 7
+	OUT  shift 8
+	RETURN  shift 85
+	ID  shift 217
+	CONTINUE  shift 207
+	BREAK  shift 208
+	FOR  shift 21
+	'}'  shift 218
+	'('  shift 119
+	.  error
+
+	SentenciaControl  goto 219
+	SentenciaEjecutable  goto 220
+	SentenciaReturn  goto 210
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	SentenciaCorte  goto 221
+	HeaderIf  goto 48
+	ListSentenciasFor  goto 222
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 126
+	SentenciaControl : HeaderFor BucleFor .  (157)
+
+	.  reduce 157
+
+
+state 127
+	SentenciaControl : HeaderForID '{' . ListSentenciasFor '}' ELSE cte ';'  (158)
+	SentenciaControl : HeaderForID '{' . ListSentenciasFor '}' ELSE signo cte ';'  (159)
+
+	error  shift 116
+	IF  shift 7
+	OUT  shift 8
+	RETURN  shift 85
+	ID  shift 217
+	CONTINUE  shift 207
+	BREAK  shift 208
+	FOR  shift 21
+	'('  shift 119
+	.  error
+
+	SentenciaControl  goto 219
+	SentenciaEjecutable  goto 220
+	SentenciaReturn  goto 210
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	SentenciaCorte  goto 221
+	HeaderIf  goto 48
+	ListSentenciasFor  goto 223
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 128
+	HeaderIf : IF Condicion THEN .  (107)
+
+	.  reduce 107
+
+
+state 129
+	Salida : OUT '(' CADENA_MULT . ')'  (65)
+
+	')'  shift 224
+	.  error
+
+
+state 130
+	Parametro : ID .  (48)
+
+	.  reduce 48
+
+
+state 131
+	HeaderFuncion : FUN '(' ')' . ':' Tipo  (38)
+
+	':'  shift 225
+	.  error
+
+
+state 132
+	Parametro : Tipo . ID  (47)
+
+	ID  shift 226
+	.  error
+
+
+state 133
+	HeaderFuncion : FUN '(' Parametro . ',' Parametro ')' ':' Tipo  (36)
+	HeaderFuncion : FUN '(' Parametro . ')' ':' Tipo  (37)
+
+	','  shift 227
+	')'  shift 228
+	.  error
+
+
+state 134
+	HeaderWhen : WHEN Condicion THEN .  (60)
+
+	.  reduce 60
+
+
+state 135
+	Asig : ID error ';' .  (59)
+
+	.  reduce 59
+
+
+state 136
+	Asig : ID ASIGNACION ID . ';'  (56)
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	';'  shift 229
+	'('  shift 73
+	.  error
+
+	signo  goto 76
+	ListParametrosInv  goto 77
+
+
+state 137
+	Asig : ID ASIGNACION signo . cte ';'  (58)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	.  error
+
+	cte  goto 230
+
+
+state 138
+	Asig : ID ASIGNACION cte . ';'  (57)
+	Expresion : cte . signo ID  (83)
+	Expresion : cte . '*' ID  (84)
+	Expresion : cte . '/' ID  (85)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 103
+	'/'  shift 104
+	';'  shift 231
+	.  error
+
+	signo  goto 105
+
+
+state 139
+	Asig : ID ASIGNACION Expresion . ';'  (55)
+	Expresion : Expresion . signo ID  (72)
+	Expresion : Expresion . signo cte  (73)
+	Expresion : Expresion . '*' ID  (78)
+	Expresion : Expresion . '/' ID  (79)
+	Expresion : Expresion . '*' cte  (80)
+	Expresion : Expresion . '/' cte  (81)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 110
+	'/'  shift 111
+	';'  shift 232
+	.  error
+
+	signo  goto 112
+
+
+140: shift/reduce conflict (shift 233, reduce 152) on '{'
+state 140
+	HeaderForID : ID ASIGNACION HeaderFor .  (152)
+	SentenciaControl : ID ASIGNACION HeaderFor . '{' '}' ELSE cte ';'  (161)
+
+	'{'  shift 233
+
+
+state 141
+	SentenciaControl : ID ASIGNACION BucleFor . ELSE signo cte ';'  (160)
+
+	ELSE  shift 234
+	.  error
+
+
+state 142
+	Expresion : ID '*' ID .  (74)
+
+	.  reduce 74
+
+
+state 143
+	Expresion : ID '*' cte .  (76)
+
+	.  reduce 76
+
+
+state 144
+	Expresion : ID '/' ID .  (75)
+
+	.  reduce 75
+
+
+state 145
+	Expresion : ID '/' cte .  (77)
+
+	.  reduce 77
+
+
+state 146
+	ListVariables : ID ',' ListVariables .  (30)
+
+	.  reduce 30
+
+
+state 147
+	ParametroReal : ID .  (69)
+
+	.  reduce 69
+
+
+state 148
+	ListParametrosInv : '(' ')' .  (87)
+
+	.  reduce 87
+
+
+state 149
+	ParametroReal : signo . cte  (68)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	.  error
+
+	cte  goto 235
+
+
+state 150
+	ParametroReal : cte .  (67)
+
+	.  reduce 67
+
+
+state 151
+	ListParametrosInv : '(' ParametroReal . ')'  (88)
+	ListParametrosInv : '(' ParametroReal . ',' ParametroReal ')'  (89)
+
+	','  shift 236
+	')'  shift 237
+	.  error
+
+
+state 152
+	HeaderForID : ID ':' HeaderFor .  (151)
+
+	.  reduce 151
+
+
+state 153
+	Expresion : ID signo ID .  (70)
+
+	.  reduce 70
+
+
+state 154
+	Expresion : ID signo cte .  (71)
+
+	.  reduce 71
+
+
+state 155
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+	Comparacion : ID Comparador ID .  (139)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	'('  shift 73
+	THEN  reduce 139
+	'{'  reduce 139
+	')'  reduce 139
+
+	signo  goto 76
+	ListParametrosInv  goto 77
+
+
+state 156
+	Comparacion : ID Comparador signo . cte  (138)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	.  error
+
+	cte  goto 238
+
+
+state 157
+	Expresion : cte . signo ID  (83)
+	Expresion : cte . '*' ID  (84)
+	Expresion : cte . '/' ID  (85)
+	Comparacion : ID Comparador cte .  (137)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 103
+	'/'  shift 104
+	THEN  reduce 137
+	'{'  reduce 137
+	')'  reduce 137
+
+	signo  goto 105
+
+
+state 158
+	Expresion : Expresion . signo ID  (72)
+	Expresion : Expresion . signo cte  (73)
+	Expresion : Expresion . '*' ID  (78)
+	Expresion : Expresion . '/' ID  (79)
+	Expresion : Expresion . '*' cte  (80)
+	Expresion : Expresion . '/' cte  (81)
+	Comparacion : ID Comparador Expresion .  (134)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 110
+	'/'  shift 111
+	THEN  reduce 134
+	'{'  reduce 134
+	')'  reduce 134
+
+	signo  goto 112
+
+
+state 159
+	AsigCte : ID ASIGNACION . CTE_ENTERA  (21)
+	AsigCte : ID ASIGNACION . signo CTE_ENTERA  (22)
+	AsigCte : ID ASIGNACION . CTE_FLOTANTE  (23)
+	AsigCte : ID ASIGNACION . signo CTE_FLOTANTE  (24)
+	AsigCte : ID ASIGNACION .  (26)
+
+	CTE_ENTERA  shift 239
+	CTE_FLOTANTE  shift 240
+	'+'  shift 22
+	'-'  shift 23
+	';'  reduce 26
+	','  reduce 26
+
+	signo  goto 241
+
+
+state 160
+	AsigCte : ID cte .  (27)
+
+	.  reduce 27
+
+
+state 161
+	AsigCte : ASIGNACION cte .  (25)
+
+	.  reduce 25
+
+
+state 162
+	SentenciaDeclarativa : CONST ListCte ';' .  (15)
+
+	.  reduce 15
+
+
+state 163
+	ListCte : ListCte ',' . AsigCte  (20)
+
+	ID  shift 79
+	ASIGNACION  shift 80
+	.  error
+
+	AsigCte  goto 242
+
+
+state 164
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	'('  shift 73
+	.  error
+
+	signo  goto 76
+	ListParametrosInv  goto 77
+
+
+state 165
+	ConversionExplicita : TOF32 '(' ')' .  (91)
+
+	.  reduce 91
+
+
+state 166
+	Expresion : cte . signo ID  (83)
+	Expresion : cte . '*' ID  (84)
+	Expresion : cte . '/' ID  (85)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 103
+	'/'  shift 104
+	.  error
+
+	signo  goto 105
+
+
+state 167
+	Expresion : Expresion . signo ID  (72)
+	Expresion : Expresion . signo cte  (73)
+	Expresion : Expresion . '*' ID  (78)
+	Expresion : Expresion . '/' ID  (79)
+	Expresion : Expresion . '*' cte  (80)
+	Expresion : Expresion . '/' cte  (81)
+	ConversionExplicita : TOF32 '(' Expresion . ')'  (90)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 110
+	'/'  shift 111
+	')'  shift 243
+	.  error
+
+	signo  goto 112
+
+
+state 168
+	AsigFor : ID . ASIGNACION CTE_ENTERA  (153)
+	AsigFor : ID . ASIGNACION ID  (154)
+
+	ASIGNACION  shift 244
+	.  error
+
+
+state 169
+	HeaderFor : FOR '(' AsigFor . ';' CondicionFor ';' signo CTE_ENTERA ')'  (150)
+
+	';'  shift 245
+	.  error
+
+
+state 170
+	SentenciaReturn : RETURN ';' .  (102)
+
+	.  reduce 102
+
+
+state 171
+	SentenciaReturn : RETURN '(' . ID ')' ';'  (96)
+	SentenciaReturn : RETURN '(' . cte ')' ';'  (97)
+	SentenciaReturn : RETURN '(' . Expresion ')' ';'  (98)
+	SentenciaReturn : RETURN '(' . ID ')'  (99)
+	SentenciaReturn : RETURN '(' . cte ')'  (100)
+	SentenciaReturn : RETURN '(' . Expresion ')'  (101)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 246
+	TOF32  shift 20
+	.  error
+
+	cte  goto 247
+	Expresion  goto 248
+	ConversionExplicita  goto 47
+
+
+state 172
+	ListVariables : ID . ',' ListVariables  (30)
+	ListVariables : ID .  (31)
+	ListVariables : ID . ListVariables  (32)
+	Asig : ID . ASIGNACION Expresion ';'  (55)
+	Asig : ID . ASIGNACION ID ';'  (56)
+	Asig : ID . ASIGNACION cte ';'  (57)
+	Asig : ID . ASIGNACION signo cte ';'  (58)
+	Asig : ID . error ';'  (59)
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+	Comparacion : ID . Comparador Expresion  (134)
+	Comparacion : ID . Comparador cte  (137)
+	Comparacion : ID . Comparador signo cte  (138)
+	Comparacion : ID . Comparador ID  (139)
+
+	error  shift 67
+	ID  shift 68
+	ASIGNACION  shift 206
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	','  shift 72
+	'('  shift 73
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	';'  reduce 31
+
+	ListVariables  goto 75
+	signo  goto 76
+	ListParametrosInv  goto 77
+	Comparador  goto 78
+
+
+state 173
+	Cuerpo : SentenciaDeclarativa . Cuerpo  (50)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	RETURN  shift 85
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 172
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	SentenciaDeclarativa  goto 173
+	SentenciaEjecutable  goto 174
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Cuerpo  goto 176
+	SentenciaReturn  goto 91
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+
+
+state 174
+	Cuerpo : SentenciaEjecutable . Cuerpo  (49)
+
+	error  shift 6
+	IF  shift 7
+	OUT  shift 8
+	FUN  shift 9
+	RETURN  shift 85
+	I8  shift 10
+	F32  shift 11
+	WHEN  shift 12
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 172
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	CONST  shift 19
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	'{'  shift 86
+	'('  shift 25
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	SentenciaDeclarativa  goto 173
+	SentenciaEjecutable  goto 174
+	Tipo  goto 33
+	ListVariables  goto 34
+	Funcion  goto 35
+	WhenCondicion  goto 36
+	signo  goto 37
+	cte  goto 38
+	HeaderFuncion  goto 39
+	Fun  goto 40
+	Cuerpo  goto 177
+	SentenciaReturn  goto 91
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	Expresion  goto 44
+	HeaderWhen  goto 45
+	Condicion  goto 46
+	ConversionExplicita  goto 47
+	HeaderIf  goto 48
+	Comparacion  goto 49
+	Comparador  goto 50
+
+
+state 175
+	Programa : Nombre_programa '{' ListSentencias '}' .  (1)
+
+	.  reduce 1
+
+
+state 176
+	Cuerpo : SentenciaDeclarativa Cuerpo .  (50)
+
+	.  reduce 50
+
+
+state 177
+	Cuerpo : SentenciaEjecutable Cuerpo .  (49)
+
+	.  reduce 49
+
+
+state 178
+	Funcion : '{' Cuerpo '}' .  (45)
+
+	.  reduce 45
+
+
+state 179
+	Salida : '(' CADENA_MULT ')' .  (66)
+
+	.  reduce 66
+
+
+state 180
+	Condicion : '(' Comparacion ')' .  (119)
+
+	.  reduce 119
+
+
+state 181
+	SentenciaDeclarativa : Tipo error ';' .  (13)
+
+	.  reduce 13
+
+
+state 182
+	SentenciaDeclarativa : Tipo ListVariables ';' .  (12)
+
+	.  reduce 12
+
+
+state 183
+	Comparacion : signo cte Comparador . Expresion  (132)
+	Comparacion : signo cte Comparador . ID  (136)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 249
+	TOF32  shift 20
+	.  error
+
+	cte  goto 166
+	Expresion  goto 250
+	ConversionExplicita  goto 47
+
+
+state 184
+	Expresion : cte '*' ID .  (84)
+
+	.  reduce 84
+
+
+state 185
+	Expresion : cte '/' ID .  (85)
+
+	.  reduce 85
+
+
+state 186
+	Expresion : cte signo ID .  (83)
+
+	.  reduce 83
+
+
+state 187
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+	Comparacion : cte Comparador ID .  (135)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	'('  shift 73
+	THEN  reduce 135
+	'{'  reduce 135
+	')'  reduce 135
+
+	signo  goto 76
+	ListParametrosInv  goto 77
+
+
+state 188
+	Expresion : cte . signo ID  (83)
+	Expresion : cte . '*' ID  (84)
+	Expresion : cte . '/' ID  (85)
+	Comparacion : cte Comparador cte .  (140)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 103
+	'/'  shift 104
+	THEN  reduce 140
+	'{'  reduce 140
+	')'  reduce 140
+
+	signo  goto 105
+
+
+state 189
+	Expresion : Expresion . signo ID  (72)
+	Expresion : Expresion . signo cte  (73)
+	Expresion : Expresion . '*' ID  (78)
+	Expresion : Expresion . '/' ID  (79)
+	Expresion : Expresion . '*' cte  (80)
+	Expresion : Expresion . '/' cte  (81)
+	Comparacion : cte Comparador Expresion .  (131)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 110
+	'/'  shift 111
+	THEN  reduce 131
+	'{'  reduce 131
+	')'  reduce 131
+
+	signo  goto 112
+
+
+state 190
+	Funcion : HeaderFuncion '{' '}' .  (44)
+
+	.  reduce 44
+
+
+state 191
+	Funcion : HeaderFuncion '{' ListSentencias . '}'  (46)
+
+	'}'  shift 251
+	.  error
+
+
+state 192
+	Funcion : HeaderFuncion '{' Cuerpo . '}'  (43)
+
+	'}'  shift 252
+	.  error
+
+
+state 193
+	HeaderFuncion : Fun '(' ')' . ':' Tipo  (35)
+	HeaderFuncion : Fun '(' ')' . ':'  (41)
+
+	':'  shift 253
+	.  error
+
+
+state 194
+	HeaderFuncion : Fun '(' Parametro . ',' Parametro ')' ':' Tipo  (33)
+	HeaderFuncion : Fun '(' Parametro . ')' ':' Tipo  (34)
+	HeaderFuncion : Fun '(' Parametro . ',' Parametro ')' ':'  (39)
+	HeaderFuncion : Fun '(' Parametro . ')' ':'  (40)
+
+	','  shift 254
+	')'  shift 255
+	.  error
+
+
+state 195
+	Expresion : Expresion '*' ID .  (78)
+
+	.  reduce 78
+
+
+state 196
+	Expresion : Expresion '*' cte .  (80)
+
+	.  reduce 80
+
+
+state 197
+	Expresion : Expresion '/' ID .  (79)
+
+	.  reduce 79
+
+
+state 198
+	Expresion : Expresion '/' cte .  (81)
+
+	.  reduce 81
+
+
+state 199
+	Expresion : Expresion signo ID .  (72)
+
+	.  reduce 72
+
+
+state 200
+	Expresion : Expresion signo cte .  (73)
+
+	.  reduce 73
+
+
+state 201
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+	Comparacion : Expresion Comparador ID .  (133)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	'('  shift 73
+	THEN  reduce 133
+	'{'  reduce 133
+	')'  reduce 133
+
+	signo  goto 76
+	ListParametrosInv  goto 77
+
+
+state 202
+	Comparacion : Expresion Comparador signo . cte  (130)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	.  error
+
+	cte  goto 256
+
+
+state 203
+	Expresion : cte . signo ID  (83)
+	Expresion : cte . '*' ID  (84)
+	Expresion : cte . '/' ID  (85)
+	Comparacion : Expresion Comparador cte .  (129)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 103
+	'/'  shift 104
+	THEN  reduce 129
+	'{'  reduce 129
+	')'  reduce 129
+
+	signo  goto 105
+
+
+state 204
+	Expresion : Expresion . signo ID  (72)
+	Expresion : Expresion . signo cte  (73)
+	Expresion : Expresion . '*' ID  (78)
+	Expresion : Expresion . '/' ID  (79)
+	Expresion : Expresion . '*' cte  (80)
+	Expresion : Expresion . '/' cte  (81)
+	Comparacion : Expresion Comparador Expresion .  (128)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 110
+	'/'  shift 111
+	THEN  reduce 128
+	'{'  reduce 128
+	')'  reduce 128
+
+	signo  goto 112
+
+
+state 205
+	WhenCondicion : HeaderWhen '{' ListSentencias . '}'  (63)
+
+	'}'  shift 257
+	.  error
+
+
+state 206
+	Asig : ID ASIGNACION . Expresion ';'  (55)
+	Asig : ID ASIGNACION . ID ';'  (56)
+	Asig : ID ASIGNACION . cte ';'  (57)
+	Asig : ID ASIGNACION . signo cte ';'  (58)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 136
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	.  error
+
+	signo  goto 137
+	cte  goto 138
+	Expresion  goto 139
+	ConversionExplicita  goto 47
+
+
+state 207
+	SentenciaCorte : CONTINUE . ':' ID ';'  (170)
+
+	':'  shift 258
+	.  error
+
+
+state 208
+	SentenciaCorte : BREAK . ';'  (167)
+	SentenciaCorte : BREAK . cte ';'  (168)
+	SentenciaCorte : BREAK . signo cte ';'  (169)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	'+'  shift 22
+	'-'  shift 23
+	';'  shift 259
+	.  error
+
+	signo  goto 260
+	cte  goto 261
+
+
+state 209
+	ListSentenciasIf : SentenciaEjecutable . ListSentenciasIf  (103)
+	ListSentenciasIf : SentenciaEjecutable .  (105)
+
+	error  shift 116
+	IF  shift 7
+	OUT  shift 8
+	RETURN  shift 85
+	ID  shift 117
+	CONTINUE  shift 207
+	BREAK  shift 208
+	'('  shift 119
+	'}'  reduce 105
+
+	SentenciaEjecutable  goto 209
+	SentenciaReturn  goto 210
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	ListSentenciasIf  goto 262
+	SentenciaCorte  goto 212
+	HeaderIf  goto 48
+
+
+state 210
+	SentenciaCorte : SentenciaReturn .  (166)
+
+	.  reduce 166
+
+
+state 211
+	SentenciasIf : '{' ListSentenciasIf . '}'  (110)
+
+	'}'  shift 263
+	.  error
+
+
+state 212
+	ListSentenciasIf : SentenciaCorte . ListSentenciasIf  (104)
+	ListSentenciasIf : SentenciaCorte .  (106)
+
+	error  shift 116
+	IF  shift 7
+	OUT  shift 8
+	RETURN  shift 85
+	ID  shift 117
+	CONTINUE  shift 207
+	BREAK  shift 208
+	'('  shift 119
+	'}'  reduce 106
+
+	SentenciaEjecutable  goto 209
+	SentenciaReturn  goto 210
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	ListSentenciasIf  goto 264
+	SentenciaCorte  goto 212
+	HeaderIf  goto 48
+
+
+state 213
+	Seleccion : HeaderIf CuerpoIf error .  (116)
+
+	.  reduce 116
+
+
+state 214
+	CuerpoElse : ELSE . CuerpoIf END_IF  (112)
+	CuerpoElse : ELSE . CuerpoIf error  (113)
+
+	error  shift 116
+	IF  shift 7
+	OUT  shift 8
+	ID  shift 117
+	'{'  shift 118
+	'('  shift 119
+	.  error
+
+	SentenciaEjecutable  goto 120
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	HeaderIf  goto 48
+	SentenciasIf  goto 121
+	CuerpoIf  goto 265
+
+
+state 215
+	Seleccion : HeaderIf CuerpoIf END_IF .  (114)
+
+	.  reduce 114
+
+
+state 216
+	Seleccion : HeaderIf CuerpoIf CuerpoElse .  (115)
+
+	.  reduce 115
+
+
+state 217
+	Asig : ID . ASIGNACION Expresion ';'  (55)
+	Asig : ID . ASIGNACION ID ';'  (56)
+	Asig : ID . ASIGNACION cte ';'  (57)
+	Asig : ID . ASIGNACION signo cte ';'  (58)
+	Asig : ID . error ';'  (59)
+	HeaderForID : ID . ':' HeaderFor  (151)
+	HeaderForID : ID . ASIGNACION HeaderFor  (152)
+	SentenciaControl : ID . ASIGNACION BucleFor ELSE signo cte ';'  (160)
+	SentenciaControl : ID . ASIGNACION HeaderFor '{' '}' ELSE cte ';'  (161)
+
+	error  shift 67
+	ASIGNACION  shift 69
+	':'  shift 74
+	.  error
+
+
+state 218
+	BucleFor : '{' '}' . ';'  (156)
+
+	';'  shift 266
+	.  error
+
+
+state 219
+	ListSentenciasFor : SentenciaControl .  (147)
+
+	.  reduce 147
+
+
+state 220
+	ListSentenciasFor : SentenciaEjecutable .  (148)
+
+	.  reduce 148
+
+
+state 221
+	ListSentenciasFor : SentenciaCorte .  (149)
+
+	.  reduce 149
+
+
+state 222
+	ListSentenciasFor : ListSentenciasFor . SentenciaEjecutable  (144)
+	ListSentenciasFor : ListSentenciasFor . SentenciaControl  (145)
+	ListSentenciasFor : ListSentenciasFor . SentenciaCorte  (146)
+	BucleFor : '{' ListSentenciasFor . '}'  (155)
+
+	error  shift 116
+	IF  shift 7
+	OUT  shift 8
+	RETURN  shift 85
+	ID  shift 217
+	CONTINUE  shift 207
+	BREAK  shift 208
+	FOR  shift 21
+	'}'  shift 267
+	'('  shift 119
+	.  error
+
+	SentenciaControl  goto 268
+	SentenciaEjecutable  goto 269
+	SentenciaReturn  goto 210
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	SentenciaCorte  goto 270
+	HeaderIf  goto 48
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 223
+	ListSentenciasFor : ListSentenciasFor . SentenciaEjecutable  (144)
+	ListSentenciasFor : ListSentenciasFor . SentenciaControl  (145)
+	ListSentenciasFor : ListSentenciasFor . SentenciaCorte  (146)
+	SentenciaControl : HeaderForID '{' ListSentenciasFor . '}' ELSE cte ';'  (158)
+	SentenciaControl : HeaderForID '{' ListSentenciasFor . '}' ELSE signo cte ';'  (159)
+
+	error  shift 116
+	IF  shift 7
+	OUT  shift 8
+	RETURN  shift 85
+	ID  shift 217
+	CONTINUE  shift 207
+	BREAK  shift 208
+	FOR  shift 21
+	'}'  shift 271
+	'('  shift 119
+	.  error
+
+	SentenciaControl  goto 268
+	SentenciaEjecutable  goto 269
+	SentenciaReturn  goto 210
+	Seleccion  goto 41
+	Asig  goto 42
+	Salida  goto 43
+	SentenciaCorte  goto 270
+	HeaderIf  goto 48
+	HeaderFor  goto 51
+	HeaderForID  goto 52
+
+
+state 224
+	Salida : OUT '(' CADENA_MULT ')' .  (65)
+
+	.  reduce 65
+
+
+state 225
+	HeaderFuncion : FUN '(' ')' ':' . Tipo  (38)
+
+	I8  shift 10
+	F32  shift 11
+	.  error
+
+	Tipo  goto 272
+
+
+state 226
+	Parametro : Tipo ID .  (47)
+
+	.  reduce 47
+
+
+state 227
+	HeaderFuncion : FUN '(' Parametro ',' . Parametro ')' ':' Tipo  (36)
+
+	I8  shift 10
+	F32  shift 11
+	ID  shift 130
+	.  error
+
+	Tipo  goto 132
+	Parametro  goto 273
+
+
+state 228
+	HeaderFuncion : FUN '(' Parametro ')' . ':' Tipo  (37)
+
+	':'  shift 274
+	.  error
+
+
+state 229
+	Asig : ID ASIGNACION ID ';' .  (56)
+
+	.  reduce 56
+
+
+state 230
+	Asig : ID ASIGNACION signo cte . ';'  (58)
+
+	';'  shift 275
+	.  error
+
+
+state 231
+	Asig : ID ASIGNACION cte ';' .  (57)
+
+	.  reduce 57
+
+
+state 232
+	Asig : ID ASIGNACION Expresion ';' .  (55)
+
+	.  reduce 55
+
+
+state 233
+	SentenciaControl : ID ASIGNACION HeaderFor '{' . '}' ELSE cte ';'  (161)
+
+	'}'  shift 276
+	.  error
+
+
+state 234
+	SentenciaControl : ID ASIGNACION BucleFor ELSE . signo cte ';'  (160)
+
+	'+'  shift 22
+	'-'  shift 23
+	.  error
+
+	signo  goto 277
+
+
+state 235
+	ParametroReal : signo cte .  (68)
+
+	.  reduce 68
+
+
+state 236
+	ListParametrosInv : '(' ParametroReal ',' . ParametroReal ')'  (89)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	ID  shift 147
+	'+'  shift 22
+	'-'  shift 23
+	.  error
+
+	signo  goto 149
+	cte  goto 150
+	ParametroReal  goto 278
+
+
+state 237
+	ListParametrosInv : '(' ParametroReal ')' .  (88)
+
+	.  reduce 88
+
+
+state 238
+	Comparacion : ID Comparador signo cte .  (138)
+
+	.  reduce 138
+
+
+state 239
+	AsigCte : ID ASIGNACION CTE_ENTERA .  (21)
+
+	.  reduce 21
+
+
+state 240
+	AsigCte : ID ASIGNACION CTE_FLOTANTE .  (23)
+
+	.  reduce 23
+
+
+state 241
+	AsigCte : ID ASIGNACION signo . CTE_ENTERA  (22)
+	AsigCte : ID ASIGNACION signo . CTE_FLOTANTE  (24)
+
+	CTE_ENTERA  shift 279
+	CTE_FLOTANTE  shift 280
+	.  error
+
+
+state 242
+	ListCte : ListCte ',' AsigCte .  (20)
+
+	.  reduce 20
+
+
+state 243
+	ConversionExplicita : TOF32 '(' Expresion ')' .  (90)
+
+	.  reduce 90
+
+
+state 244
+	AsigFor : ID ASIGNACION . CTE_ENTERA  (153)
+	AsigFor : ID ASIGNACION . ID  (154)
+
+	CTE_ENTERA  shift 281
+	ID  shift 282
+	.  error
+
+
+state 245
+	HeaderFor : FOR '(' AsigFor ';' . CondicionFor ';' signo CTE_ENTERA ')'  (150)
+
+	ID  shift 283
+	.  error
+
+	CondicionFor  goto 284
+
+
+state 246
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+	SentenciaReturn : RETURN '(' ID . ')' ';'  (96)
+	SentenciaReturn : RETURN '(' ID . ')'  (99)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	'('  shift 73
+	')'  shift 285
+	.  error
+
+	signo  goto 76
+	ListParametrosInv  goto 77
+
+
+state 247
+	Expresion : cte . signo ID  (83)
+	Expresion : cte . '*' ID  (84)
+	Expresion : cte . '/' ID  (85)
+	SentenciaReturn : RETURN '(' cte . ')' ';'  (97)
+	SentenciaReturn : RETURN '(' cte . ')'  (100)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 103
+	'/'  shift 104
+	')'  shift 286
+	.  error
+
+	signo  goto 105
+
+
+state 248
+	Expresion : Expresion . signo ID  (72)
+	Expresion : Expresion . signo cte  (73)
+	Expresion : Expresion . '*' ID  (78)
+	Expresion : Expresion . '/' ID  (79)
+	Expresion : Expresion . '*' cte  (80)
+	Expresion : Expresion . '/' cte  (81)
+	SentenciaReturn : RETURN '(' Expresion . ')' ';'  (98)
+	SentenciaReturn : RETURN '(' Expresion . ')'  (101)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 110
+	'/'  shift 111
+	')'  shift 287
+	.  error
+
+	signo  goto 112
+
+
+state 249
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+	Comparacion : signo cte Comparador ID .  (136)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	'('  shift 73
+	THEN  reduce 136
+	'{'  reduce 136
+	')'  reduce 136
+
+	signo  goto 76
+	ListParametrosInv  goto 77
+
+
+state 250
+	Expresion : Expresion . signo ID  (72)
+	Expresion : Expresion . signo cte  (73)
+	Expresion : Expresion . '*' ID  (78)
+	Expresion : Expresion . '/' ID  (79)
+	Expresion : Expresion . '*' cte  (80)
+	Expresion : Expresion . '/' cte  (81)
+	Comparacion : signo cte Comparador Expresion .  (132)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 110
+	'/'  shift 111
+	THEN  reduce 132
+	'{'  reduce 132
+	')'  reduce 132
+
+	signo  goto 112
+
+
+state 251
+	Funcion : HeaderFuncion '{' ListSentencias '}' .  (46)
+
+	.  reduce 46
+
+
+state 252
+	Funcion : HeaderFuncion '{' Cuerpo '}' .  (43)
+
+	.  reduce 43
+
+
+state 253
+	HeaderFuncion : Fun '(' ')' ':' . Tipo  (35)
+	HeaderFuncion : Fun '(' ')' ':' .  (41)
+
+	I8  shift 10
+	F32  shift 11
+	'{'  reduce 41
+
+	Tipo  goto 288
+
+
+state 254
+	HeaderFuncion : Fun '(' Parametro ',' . Parametro ')' ':' Tipo  (33)
+	HeaderFuncion : Fun '(' Parametro ',' . Parametro ')' ':'  (39)
+
+	I8  shift 10
+	F32  shift 11
+	ID  shift 130
+	.  error
+
+	Tipo  goto 132
+	Parametro  goto 289
+
+
+state 255
+	HeaderFuncion : Fun '(' Parametro ')' . ':' Tipo  (34)
+	HeaderFuncion : Fun '(' Parametro ')' . ':'  (40)
+
+	':'  shift 290
+	.  error
+
+
+state 256
+	Comparacion : Expresion Comparador signo cte .  (130)
+
+	.  reduce 130
+
+
+state 257
+	WhenCondicion : HeaderWhen '{' ListSentencias '}' .  (63)
+
+	.  reduce 63
+
+
+state 258
+	SentenciaCorte : CONTINUE ':' . ID ';'  (170)
+
+	ID  shift 291
+	.  error
+
+
+state 259
+	SentenciaCorte : BREAK ';' .  (167)
+
+	.  reduce 167
+
+
+state 260
+	SentenciaCorte : BREAK signo . cte ';'  (169)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	.  error
+
+	cte  goto 292
+
+
+state 261
+	SentenciaCorte : BREAK cte . ';'  (168)
+
+	';'  shift 293
+	.  error
+
+
+state 262
+	ListSentenciasIf : SentenciaEjecutable ListSentenciasIf .  (103)
+
+	.  reduce 103
+
+
+state 263
+	SentenciasIf : '{' ListSentenciasIf '}' .  (110)
+
+	.  reduce 110
+
+
+state 264
+	ListSentenciasIf : SentenciaCorte ListSentenciasIf .  (104)
+
+	.  reduce 104
+
+
+state 265
+	CuerpoElse : ELSE CuerpoIf . END_IF  (112)
+	CuerpoElse : ELSE CuerpoIf . error  (113)
+
+	error  shift 294
+	END_IF  shift 295
+	.  error
+
+
+state 266
+	BucleFor : '{' '}' ';' .  (156)
+
+	.  reduce 156
+
+
+state 267
+	BucleFor : '{' ListSentenciasFor '}' .  (155)
+
+	.  reduce 155
+
+
+state 268
+	ListSentenciasFor : ListSentenciasFor SentenciaControl .  (145)
+
+	.  reduce 145
+
+
+state 269
+	ListSentenciasFor : ListSentenciasFor SentenciaEjecutable .  (144)
+
+	.  reduce 144
+
+
+state 270
+	ListSentenciasFor : ListSentenciasFor SentenciaCorte .  (146)
+
+	.  reduce 146
+
+
+state 271
+	SentenciaControl : HeaderForID '{' ListSentenciasFor '}' . ELSE cte ';'  (158)
+	SentenciaControl : HeaderForID '{' ListSentenciasFor '}' . ELSE signo cte ';'  (159)
+
+	ELSE  shift 296
+	.  error
+
+
+state 272
+	HeaderFuncion : FUN '(' ')' ':' Tipo .  (38)
+
+	.  reduce 38
+
+
+state 273
+	HeaderFuncion : FUN '(' Parametro ',' Parametro . ')' ':' Tipo  (36)
+
+	')'  shift 297
+	.  error
+
+
+state 274
+	HeaderFuncion : FUN '(' Parametro ')' ':' . Tipo  (37)
+
+	I8  shift 10
+	F32  shift 11
+	.  error
+
+	Tipo  goto 298
+
+
+state 275
+	Asig : ID ASIGNACION signo cte ';' .  (58)
+
+	.  reduce 58
+
+
+state 276
+	SentenciaControl : ID ASIGNACION HeaderFor '{' '}' . ELSE cte ';'  (161)
+
+	ELSE  shift 299
+	.  error
+
+
+state 277
+	SentenciaControl : ID ASIGNACION BucleFor ELSE signo . cte ';'  (160)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	.  error
+
+	cte  goto 300
+
+
+state 278
+	ListParametrosInv : '(' ParametroReal ',' ParametroReal . ')'  (89)
+
+	')'  shift 301
+	.  error
+
+
+state 279
+	AsigCte : ID ASIGNACION signo CTE_ENTERA .  (22)
+
+	.  reduce 22
+
+
+state 280
+	AsigCte : ID ASIGNACION signo CTE_FLOTANTE .  (24)
+
+	.  reduce 24
+
+
+state 281
+	AsigFor : ID ASIGNACION CTE_ENTERA .  (153)
+
+	.  reduce 153
+
+
+state 282
+	AsigFor : ID ASIGNACION ID .  (154)
+
+	.  reduce 154
+
+
+state 283
+	CondicionFor : ID . Comparador ID  (162)
+	CondicionFor : ID . Comparador Expresion  (163)
+	CondicionFor : ID . Comparador CTE_ENTERA  (164)
+	CondicionFor : ID . Comparador signo CTE_ENTERA  (165)
+
+	MAYOR_IGUAL  shift 16
+	MENOR_IGUAL  shift 17
+	DISTINTO  shift 18
+	'<'  shift 26
+	'>'  shift 27
+	'='  shift 28
+	.  error
+
+	Comparador  goto 302
+
+
+state 284
+	HeaderFor : FOR '(' AsigFor ';' CondicionFor . ';' signo CTE_ENTERA ')'  (150)
+
+	';'  shift 303
+	.  error
+
+
+state 285
+	SentenciaReturn : RETURN '(' ID ')' . ';'  (96)
+	SentenciaReturn : RETURN '(' ID ')' .  (99)
+
+	';'  shift 304
+	error  reduce 99
+	IF  reduce 99
+	OUT  reduce 99
+	RETURN  reduce 99
+	ID  reduce 99
+	CONTINUE  reduce 99
+	BREAK  reduce 99
+	FOR  reduce 99
+	'}'  reduce 99
+	'('  reduce 99
+
+
+state 286
+	SentenciaReturn : RETURN '(' cte ')' . ';'  (97)
+	SentenciaReturn : RETURN '(' cte ')' .  (100)
+
+	';'  shift 305
+	error  reduce 100
+	IF  reduce 100
+	OUT  reduce 100
+	RETURN  reduce 100
+	ID  reduce 100
+	CONTINUE  reduce 100
+	BREAK  reduce 100
+	FOR  reduce 100
+	'}'  reduce 100
+	'('  reduce 100
+
+
+state 287
+	SentenciaReturn : RETURN '(' Expresion ')' . ';'  (98)
+	SentenciaReturn : RETURN '(' Expresion ')' .  (101)
+
+	';'  shift 306
+	error  reduce 101
+	IF  reduce 101
+	OUT  reduce 101
+	RETURN  reduce 101
+	ID  reduce 101
+	CONTINUE  reduce 101
+	BREAK  reduce 101
+	FOR  reduce 101
+	'}'  reduce 101
+	'('  reduce 101
+
+
+state 288
+	HeaderFuncion : Fun '(' ')' ':' Tipo .  (35)
+
+	.  reduce 35
+
+
+state 289
+	HeaderFuncion : Fun '(' Parametro ',' Parametro . ')' ':' Tipo  (33)
+	HeaderFuncion : Fun '(' Parametro ',' Parametro . ')' ':'  (39)
+
+	')'  shift 307
+	.  error
+
+
+state 290
+	HeaderFuncion : Fun '(' Parametro ')' ':' . Tipo  (34)
+	HeaderFuncion : Fun '(' Parametro ')' ':' .  (40)
+
+	I8  shift 10
+	F32  shift 11
+	'{'  reduce 40
+
+	Tipo  goto 308
+
+
+state 291
+	SentenciaCorte : CONTINUE ':' ID . ';'  (170)
+
+	';'  shift 309
+	.  error
+
+
+state 292
+	SentenciaCorte : BREAK signo cte . ';'  (169)
+
+	';'  shift 310
+	.  error
+
+
+state 293
+	SentenciaCorte : BREAK cte ';' .  (168)
+
+	.  reduce 168
+
+
+state 294
+	CuerpoElse : ELSE CuerpoIf error .  (113)
+
+	.  reduce 113
+
+
+state 295
+	CuerpoElse : ELSE CuerpoIf END_IF .  (112)
+
+	.  reduce 112
+
+
+state 296
+	SentenciaControl : HeaderForID '{' ListSentenciasFor '}' ELSE . cte ';'  (158)
+	SentenciaControl : HeaderForID '{' ListSentenciasFor '}' ELSE . signo cte ';'  (159)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	'+'  shift 22
+	'-'  shift 23
+	.  error
+
+	signo  goto 311
+	cte  goto 312
+
+
+state 297
+	HeaderFuncion : FUN '(' Parametro ',' Parametro ')' . ':' Tipo  (36)
+
+	':'  shift 313
+	.  error
+
+
+state 298
+	HeaderFuncion : FUN '(' Parametro ')' ':' Tipo .  (37)
+
+	.  reduce 37
+
+
+state 299
+	SentenciaControl : ID ASIGNACION HeaderFor '{' '}' ELSE . cte ';'  (161)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	.  error
+
+	cte  goto 314
+
+
+state 300
+	SentenciaControl : ID ASIGNACION BucleFor ELSE signo cte . ';'  (160)
+
+	';'  shift 315
+	.  error
+
+
+state 301
+	ListParametrosInv : '(' ParametroReal ',' ParametroReal ')' .  (89)
+
+	.  reduce 89
+
+
+state 302
+	CondicionFor : ID Comparador . ID  (162)
+	CondicionFor : ID Comparador . Expresion  (163)
+	CondicionFor : ID Comparador . CTE_ENTERA  (164)
+	CondicionFor : ID Comparador . signo CTE_ENTERA  (165)
+
+	CTE_ENTERA  shift 316
+	CTE_FLOTANTE  shift 14
+	ID  shift 317
+	TOF32  shift 20
+	'+'  shift 22
+	'-'  shift 23
+	.  error
+
+	signo  goto 318
+	cte  goto 166
+	Expresion  goto 319
+	ConversionExplicita  goto 47
+
+
+state 303
+	HeaderFor : FOR '(' AsigFor ';' CondicionFor ';' . signo CTE_ENTERA ')'  (150)
+
+	'+'  shift 22
+	'-'  shift 23
+	.  error
+
+	signo  goto 320
+
+
+state 304
+	SentenciaReturn : RETURN '(' ID ')' ';' .  (96)
+
+	.  reduce 96
+
+
+state 305
+	SentenciaReturn : RETURN '(' cte ')' ';' .  (97)
+
+	.  reduce 97
+
+
+state 306
+	SentenciaReturn : RETURN '(' Expresion ')' ';' .  (98)
+
+	.  reduce 98
+
+
+state 307
+	HeaderFuncion : Fun '(' Parametro ',' Parametro ')' . ':' Tipo  (33)
+	HeaderFuncion : Fun '(' Parametro ',' Parametro ')' . ':'  (39)
+
+	':'  shift 321
+	.  error
+
+
+state 308
+	HeaderFuncion : Fun '(' Parametro ')' ':' Tipo .  (34)
+
+	.  reduce 34
+
+
+state 309
+	SentenciaCorte : CONTINUE ':' ID ';' .  (170)
+
+	.  reduce 170
+
+
+state 310
+	SentenciaCorte : BREAK signo cte ';' .  (169)
+
+	.  reduce 169
+
+
+state 311
+	SentenciaControl : HeaderForID '{' ListSentenciasFor '}' ELSE signo . cte ';'  (159)
+
+	CTE_ENTERA  shift 13
+	CTE_FLOTANTE  shift 14
+	.  error
+
+	cte  goto 322
+
+
+state 312
+	SentenciaControl : HeaderForID '{' ListSentenciasFor '}' ELSE cte . ';'  (158)
+
+	';'  shift 323
+	.  error
+
+
+state 313
+	HeaderFuncion : FUN '(' Parametro ',' Parametro ')' ':' . Tipo  (36)
+
+	I8  shift 10
+	F32  shift 11
+	.  error
+
+	Tipo  goto 324
+
+
+state 314
+	SentenciaControl : ID ASIGNACION HeaderFor '{' '}' ELSE cte . ';'  (161)
+
+	';'  shift 325
+	.  error
+
+
+state 315
+	SentenciaControl : ID ASIGNACION BucleFor ELSE signo cte ';' .  (160)
+
+	.  reduce 160
+
+
+state 316
+	cte : CTE_ENTERA .  (95)
+	CondicionFor : ID Comparador CTE_ENTERA .  (164)
+
+	'+'  reduce 95
+	'-'  reduce 95
+	'*'  reduce 95
+	'/'  reduce 95
+	';'  reduce 164
+
+
+state 317
+	Expresion : ID . signo ID  (70)
+	Expresion : ID . signo cte  (71)
+	Expresion : ID . '*' ID  (74)
+	Expresion : ID . '/' ID  (75)
+	Expresion : ID . '*' cte  (76)
+	Expresion : ID . '/' cte  (77)
+	Expresion : ID . ListParametrosInv  (86)
+	CondicionFor : ID Comparador ID .  (162)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 70
+	'/'  shift 71
+	'('  shift 73
+	';'  reduce 162
+
+	signo  goto 76
+	ListParametrosInv  goto 77
+
+
+state 318
+	CondicionFor : ID Comparador signo . CTE_ENTERA  (165)
+
+	CTE_ENTERA  shift 326
+	.  error
+
+
+state 319
+	Expresion : Expresion . signo ID  (72)
+	Expresion : Expresion . signo cte  (73)
+	Expresion : Expresion . '*' ID  (78)
+	Expresion : Expresion . '/' ID  (79)
+	Expresion : Expresion . '*' cte  (80)
+	Expresion : Expresion . '/' cte  (81)
+	CondicionFor : ID Comparador Expresion .  (163)
+
+	'+'  shift 22
+	'-'  shift 23
+	'*'  shift 110
+	'/'  shift 111
+	';'  reduce 163
+
+	signo  goto 112
+
+
+state 320
+	HeaderFor : FOR '(' AsigFor ';' CondicionFor ';' signo . CTE_ENTERA ')'  (150)
+
+	CTE_ENTERA  shift 327
+	.  error
+
+
+state 321
+	HeaderFuncion : Fun '(' Parametro ',' Parametro ')' ':' . Tipo  (33)
+	HeaderFuncion : Fun '(' Parametro ',' Parametro ')' ':' .  (39)
+
+	I8  shift 10
+	F32  shift 11
+	'{'  reduce 39
+
+	Tipo  goto 328
+
+
+state 322
+	SentenciaControl : HeaderForID '{' ListSentenciasFor '}' ELSE signo cte . ';'  (159)
+
+	';'  shift 329
+	.  error
+
+
+state 323
+	SentenciaControl : HeaderForID '{' ListSentenciasFor '}' ELSE cte ';' .  (158)
+
+	.  reduce 158
+
+
+state 324
+	HeaderFuncion : FUN '(' Parametro ',' Parametro ')' ':' Tipo .  (36)
+
+	.  reduce 36
+
+
+state 325
+	SentenciaControl : ID ASIGNACION HeaderFor '{' '}' ELSE cte ';' .  (161)
+
+	.  reduce 161
+
+
+state 326
+	CondicionFor : ID Comparador signo CTE_ENTERA .  (165)
+
+	.  reduce 165
+
+
+state 327
+	HeaderFor : FOR '(' AsigFor ';' CondicionFor ';' signo CTE_ENTERA . ')'  (150)
+
+	')'  shift 330
+	.  error
+
+
+state 328
+	HeaderFuncion : Fun '(' Parametro ',' Parametro ')' ':' Tipo .  (33)
+
+	.  reduce 33
+
+
+state 329
+	SentenciaControl : HeaderForID '{' ListSentenciasFor '}' ELSE signo cte ';' .  (159)
+
+	.  reduce 159
+
+
+state 330
+	HeaderFor : FOR '(' AsigFor ';' CondicionFor ';' signo CTE_ENTERA ')' .  (150)
+
+	.  reduce 150
+
+
+Rules never reduced:
+	HeaderForID : ID ASIGNACION HeaderFor  (152)
+
+
+State 140 contains 1 shift/reduce conflict.
+
+
+39 terminals, 43 nonterminals
+171 grammar rules, 331 states

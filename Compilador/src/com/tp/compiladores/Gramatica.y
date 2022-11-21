@@ -213,21 +213,27 @@ SentenciasIf: SentenciaEjecutable
         	;
 
 
-CuerpoIf: SentenciasIf {estructuraActual.desapilarYCompletar(2);
-						estructuraActual.crearTerceto("BI", null, null);}
+CuerpoIf: SentenciasIf
         ;
-CuerpoElse: ELSE CuerpoIf END_IF
-          | ELSE CuerpoIf error {yyerror("falta palabra reservada end_if");}
+
+Else: ELSE {estructuraActual.completarTercetoIf(2);
+			estructuraActual.crearTerceto("BI", null, null);
+			estructuraActual.addTercetoIf();}
+	;
+
+CuerpoElse: Else CuerpoIf END_IF {estructuraActual.completarTercetoIf(1);}
+          | Else CuerpoIf error {yyerror("falta palabra reservada end_if");}
           ;
 
-Seleccion: HeaderIf CuerpoIf END_IF {estructuraActual.desapilarYCompletar(1);}
-         | HeaderIf CuerpoIf CuerpoElse {estructuraActual.desapilarYCompletar(1);}
+Seleccion: HeaderIf CuerpoIf END_IF {estructuraActual.completarTercetoIf(1);}
+         | HeaderIf CuerpoIf CuerpoElse
          | HeaderIf CuerpoIf error {yyerror("falta palabra reservada end_if");}
 		 | error ELSE {AgregarErrorSintactico("Se espera '{' '}' ");}
 		 | error END_IF {AgregarErrorSintactico("Se espera '{' '}' ");}
 		 ;
 
-Condicion: '(' Comparacion ')' {estructuraActual.crearTerceto("BF", estructuraActual.getRefTerceto(1), null);}
+Condicion: '(' Comparacion ')' {estructuraActual.crearTerceto("BF", estructuraActual.getRefTerceto(1), null);
+								estructuraActual.addTercetoIf();}
 		 | '(' Comparacion {AgregarErrorSintactico("Falta cerrar parentesis");}
 		 | Comparacion ')' {AgregarErrorSintactico("Falta abrir parentesis");}
 		 ;
@@ -270,19 +276,32 @@ ListSentenciasFor: ListSentenciasFor SentenciaEjecutable
 HeaderFor: FOR '(' AsigFor ';' CondicionFor ';' signo CTE_ENTERA ')' 
 				{estructuraActual.addNumCondicionFor();
 				 estructuraActual.crearTerceto("BF", estructuraActual.getRefTerceto(1), null);
+				 estructuraActual.addTercetoFor();
 				 estructuraActual.crearTerceto($7.sval, estructuraActual.getIdFor(), $8.sval);
 				 estructuraActual.crearTerceto("=:", estructuraActual.getIdFor(), estructuraActual.getRefTerceto(1));
+				 estructuraActual.crearListTercetoBreak();
+				 dentroDeFor=true;
 				 }
 		 | FOR '(' AsigFor ';' CondicionFor ';' CTE_ENTERA ')'
 				{estructuraActual.addNumCondicionFor();
 				 estructuraActual.crearTerceto("BF", estructuraActual.getRefTerceto(1), null);
+				 estructuraActual.addTercetoFor();
 				 estructuraActual.crearTerceto("+", estructuraActual.getIdFor(), $7.sval);
 				 estructuraActual.crearTerceto("=:", estructuraActual.getIdFor(), estructuraActual.getRefTerceto(1));
+				 estructuraActual.crearListTercetoBreak();
+				 dentroDeFor=true;
 				 } 
 		  ;
 
-HeaderForID: ID ASIGNACION HeaderFor
+HeaderForID: ID ASIGNACION HeaderFor {estructuraActual.crearListTercetoBreakCte();
+										esperandoBreakcte=true;
+										estructuraActual.addIdAsigFor(tablaDeSimbolos.getRefSimbolo($1.sval,ambito));
+										}
 		   ;
+
+HeaderEtiqueta: ID ':' HeaderFor {//tablaDeSimbolos.add(new Simbolos($1.sval+":"+ambito, 269, "etiqueta_for")); estructuraActual.addEtiquetaFor($1.sval);
+									}
+			  ;
 
 AsigFor: ID ASIGNACION CTE_ENTERA
 		{estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));
@@ -295,24 +314,45 @@ AsigFor: ID ASIGNACION CTE_ENTERA
        ;
 
 CuerpoFor: '{' ListSentenciasFor '}'
-					{estructuraActual.desapilarYCompletar(2);
+					{
 					 estructuraActual.crearTerceto("BI", "[" + estructuraActual.getNumeroTercetoCondicionFor() + "]", null);
+					 estructuraActual.completarTercetoFor(1);
 					 estructuraActual.popIdFor();}
 					 
 		| '{''}' ';' {AgregarErrorSintactico("Se esperan sentencias ejecutables");}
 		;
 
 
-SentenciaControl: HeaderFor CuerpoFor
-				| ID ':' HeaderFor CuerpoFor
+SentenciaControl: HeaderFor CuerpoFor {
+					estructuraActual.completarTercetosBreak(1);
+					estructuraActual.borrarListTercetosBreak();
+					dentroDeFor=false;
+				}
+				| HeaderEtiqueta CuerpoFor {
+					//estructuraActual.addRefEtiqueta();
+					estructuraActual.completarTercetosBreak(1);
+					estructuraActual.borrarListTercetosBreak();
+					dentroDeFor=false;
+				}
 				| HeaderForID CuerpoFor ELSE cte ';' {
+					estructuraActual.completarTercetosBreak(1);
 					estructuraActual.crearTerceto("=:", estructuraActual.getIdAsigFor(), $4.sval);
 					estructuraActual.completarTercetosBreakCte(1);
+					estructuraActual.borrarListTercetosBreak();
+					dentroDeFor=false;
+					esperandoBreakcte=false;
+					estructuraActual.borrarIdAsigFor();
 					}
 
 				| HeaderForID CuerpoFor ELSE signo cte ';' {
+					estructuraActual.completarTercetosBreak(1);
 					estructuraActual.crearTerceto("=:", estructuraActual.getIdAsigFor(), $4.sval + $5.sval);
 					estructuraActual.completarTercetosBreakCte(1);
+					estructuraActual.borrarListTercetosBreak();
+					estructuraActual.borrarListTercetosBreakCte();
+					dentroDeFor=false;
+					esperandoBreakcte=false;
+					estructuraActual.borrarIdAsigFor();
 				}
 				;
 
@@ -357,7 +397,11 @@ SentenciaCorte: SentenciaReturn
 			  	}
 			  }
         	  | CONTINUE ':' ID ';' {
+				//if ((dentroDeFor) && (estructuraActual.existeEtiqueta($3.sval))){
+					//estructuraActual.crearTerceto("BI", estructuraActual.getRefTercetoEtiqueta($3.sval), null);
+					//estructuraActual.guardarTercetoEtiquetaFor();
 
+				//}
 			  }
 			  ;
 
@@ -388,14 +432,6 @@ public static String ambito = "";
 AnalizadorLexico lexico;
 
 
-
-	public void addListEstructuraSeguimiento(EstructuraTercetos ET){
-		listEstructurasSeguimiento.add(ET);
-	}
-
-	public EstructuraTercetos getEstructuraPendiente(){
-		return(listEstructurasSeguimiento.get(listEstructurasSeguimiento.size()-1));
-	}
 
 	public Parser(AnalizadorLexico lexico){
 		this.lexico = lexico;

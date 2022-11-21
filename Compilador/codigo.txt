@@ -1,0 +1,40 @@
+ee{
+    i8 d , q , i , c,t,n;
+    if (i<c)then
+        d=:q;
+    end_if
+    fun aa(i8 num): f32{
+        const u=: 100;
+        i8 m;
+        if(num -3< m+i) then{
+            n=: -1;
+            return(3);
+        }
+        else
+            m=: i;
+        end_if
+        return(1);
+    }
+    i=:for(i=:n; i <t ;-3){
+        if(t < 3) then{
+            i=: 1;
+            break 5;
+        }
+        else
+            if(t>2)then
+                i=:5;
+            end_if
+        end_if
+    }
+    else 1;
+
+    i8 d, q,i,c;
+    if (i<c)then
+        d=:q;
+    end_if
+    i8 num;
+    fun awf(i8 num): f32{
+        num=:0;
+        return(q);
+    }
+}

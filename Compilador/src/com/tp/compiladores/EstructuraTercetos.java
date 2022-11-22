@@ -56,6 +56,15 @@ public class EstructuraTercetos {
             tercetosWhen.get(tercetosWhen.size()-1).setValor3(salto);
         tercetosWhen.remove(tercetosBFif.size()-1);
     }
+
+    public boolean chequearCondicionWhen(){
+        String pos2 = tercetosWhen.get(0).getValor2();
+        String ref = pos2.substring(1, pos2.length()-1);
+        int refint = Integer.parseInt(ref);
+        Terceto t = listTercetos.get(refint);
+        
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////
       public void addRefEtiqueta(String terceto){ // asocio la etiqueta a el lugar donde debo saltar
         this.refEtiquetasFor.put(EtiquetasFor.get(EtiquetasFor.size()-1), terceto);

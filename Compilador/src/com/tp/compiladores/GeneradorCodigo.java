@@ -30,8 +30,8 @@ public class GeneradorCodigo{
         assembler.append("includelib \\masm32\\lib\\masm32.lib\n");
         assembler.append(".data\n");
         generarDatos();
-        assembler.append(".code\n");
-        assembler.append("start\n");
+        assembler.append(".CODE\n");
+        assembler.append("START:\n");
         int n=listEstructuraTercetos.size();
         estructuraActual= listEstructuraTercetos.get(0);
         
@@ -41,7 +41,7 @@ public class GeneradorCodigo{
             checkAndAddValue2();
             checkAndAddValue3();
         }
-
+        assembler.append("END START");
     }
 
     public static void generarDatos(){
@@ -53,6 +53,9 @@ public class GeneradorCodigo{
         }
         for(String s: numeros){
             assembler.append(s+" db "+ s+"\n");
+        }
+        for(Simbolo s: ids){
+            assembler.append(s.getLexema()+" db "+ "?"+ "\n");
         }
         
     }

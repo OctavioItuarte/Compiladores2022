@@ -105,8 +105,8 @@ public class TablaSimbolos{
 
     public String getRefFuncion(String lexema, String ambito){
         String existe=existeSimboloAmbito(lexema, ambito);
-        if(existe!=null)
         // debe buscar el simbolo en la tabla en dicho ambito.
+        if((existe!=null) && (tabla.get(existe).getUso().equals("identificador_funcion")))
             return (existe);
         else{
             System.out.println("Funcion " + lexema +" no declarada");

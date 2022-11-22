@@ -174,12 +174,12 @@ Asig: ID ASIGNACION Expresion ';'{if (!mismoTipoExpID($1.sval))
 									estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval + $4.sval);} 
 	| ID error ';' {AgregarErrorSintactico("Se espera '=:'");}
 
-HeaderWhen: WHEN Condicion THEN 
+HeaderWhen: WHEN Condicion THEN {estructuraActual.crearTercetoWhen(new Terceto("BF", estructuraActual.getRefTerceto(1)), null);}
 		  | Condicion THEN {AgregarErrorSintactico("Se espera un if o un when");}
 		  | WHEN Condicion {AgregarErrorSintactico("Se espera la palabra reservada then");}
 		  ;
 
-WhenCondicion: HeaderWhen '{' ListSentencias '}'
+WhenCondicion: HeaderWhen '{' ListSentencias '}' {estructuraActual.completarTercetoWhen(1);}
 			 | error '}' {AgregarErrorSintactico("Se espera ';'");}
 			 ;
 
@@ -237,7 +237,9 @@ ParametroReal: cte {parametrosReales.add($1.sval);}
 			 | ID {parametrosReales.add(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));}
              ;
 
-ConversionExplicita: TOF32 '(' Expresion ')'
+ConversionExplicita: TOF32 '(' Expresion ')' {if (conversionValida()){
+												estructuraActual.crearTerceto("tof32", estructuraActual.getRefTerceto(1), null);
+											  }else errores_semanticos.add(new ErrorLinea("No se puede realizar la conversion", this.linea.getNumeroLinea()));}
 				   | TOF32 '('')' {AgregarErrorSintactico("Se espera expresion");}
 				   ;
 
@@ -424,7 +426,7 @@ CondicionFor: ID Comparador ID {if (!mismoTipoIds($1.sval, $3.sval))
 								estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
 								estructuraActual.addNumCondicionFor();
 								estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-			| ID Comparador Expresion {if (!mismoTipoExpID($1.sval, $3.sval)) 
+			| ID Comparador Expresion {if (!mismoTipoExpID($1.sval)) 
 											errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 									   estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
 									   estructuraActual.addNumCondicionFor();
@@ -679,7 +681,7 @@ AnalizadorLexico lexico;
 		String tipo2 = tablaDeSimbolos.getTipo(val2);
 		if (tipo1.equals(tipo2)){
 			tipoAnterior = tipoActual;
-			tipoActual = tablaDeSimbolos.getTipo(lex1);
+			tipoActual = tablaDeSimbolos.getTipo(val1);
 			return true;
 		}
 		else {
@@ -714,7 +716,7 @@ AnalizadorLexico lexico;
 	}
 
 	public boolean mismoTipoExpID(String val){
-		String tipo = tablaDeSimbolos.getRefSimbolo(val1, ambito);
+		String tipo = tablaDeSimbolos.getRefSimbolo(val, ambito);
 		if (tipoActual == tipo){
 			return true;
 		}
@@ -735,3 +737,8 @@ AnalizadorLexico lexico;
 			}
 	}
 
+	public boolean conversionValida(){
+		if (tipoActual == "I8")
+			return true;
+		else return false;
+	}

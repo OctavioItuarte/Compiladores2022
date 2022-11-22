@@ -31,6 +31,7 @@ public class EstructuraTercetos {
 
     private List<String> listIdAsigFor= new ArrayList<>();
 
+    private List<Terceto> tercetosWhen = new ArrayList<>();
     //public List<ErrorLinea> errores_semanticos;
     
     public EstructuraTercetos(String nombre) {
@@ -41,7 +42,20 @@ public class EstructuraTercetos {
     public String getNombre(){
         return this.nombre;
     }
+    ////////////////////////////////////////////////////////////////////////////////////
 
+    public void crearTercetoWhen(){
+        tercetosWhen.add(this.getTerceto(listTercetos.size()-1));;
+    }
+
+    public void completarTercetoWhen(int num){
+        //completa los tercetos con BF de las condiciones when
+        String salto="[" + String.valueOf(this.cantTercetos()-1+num) + "]";
+        
+        if(tercetosWhen.get(tercetosWhen.size()-1).getValor1().equals("BF"))
+            tercetosWhen.get(tercetosWhen.size()-1).setValor3(salto);
+        tercetosWhen.remove(tercetosBFif.size()-1);
+    }
     ////////////////////////////////////////////////////////////////////////////////////
       public void addRefEtiqueta(String terceto){ // asocio la etiqueta a el lugar donde debo saltar
         this.refEtiquetasFor.put(EtiquetasFor.get(EtiquetasFor.size()-1), terceto);

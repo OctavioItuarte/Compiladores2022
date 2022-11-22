@@ -15,7 +15,7 @@ public class AccionSemantica5 extends AccionSemantica{
 		super.lexema= l.concat(sim);
 		super.nuevaPosicion= nuevaPos + 1;
 
-		System.out.println(super.lexema+" "+tipos.getToken(lexema));
+		//System.out.println(super.lexema+" "+tipos.getToken(lexema));
 		return tipos.getToken(lexema);
 	}
 }

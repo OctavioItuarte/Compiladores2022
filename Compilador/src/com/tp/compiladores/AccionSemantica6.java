@@ -20,7 +20,7 @@ public class AccionSemantica6 extends AccionSemantica {
 			linea.retrocederLinea();
 		}
 		
-		System.out.println(super.lexema+" "+tipos.getToken(lexema));
+		//System.out.println(super.lexema+" "+tipos.getToken(lexema));
 		return tipos.getToken(l);
 	}
 

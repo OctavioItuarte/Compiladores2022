@@ -24,6 +24,13 @@ public class Simbolo {
         this.uso=uso;
         this.tipo = tipo;
     }
+    Simbolo(String lexema, int token, String uso, String tipo, String valor){
+        this.lexema=lexema;
+        this.token=token;
+        this.uso=uso;
+        this.tipo = tipo;
+        this.valor=valor;
+    }
     public void setUso(String uso){
         this.uso=uso;
     }
@@ -46,8 +53,15 @@ public class Simbolo {
         return this.uso;
     }
 
+    public String getTipo(){
+        return this.tipo;
+    }
+    public String getValor(){
+        return this.valor;
+    }
+
     public String imprimir(){
-        return ("Lexema: "+ lexema+" - Token: "+token + " - Tipo: "+tipo+" - Uso: "+uso );
+        return ("Lexema: "+ lexema+"\t"+"Token: "+token + "\t"+"Tipo: "+tipo+"\t"+"Uso: "+uso +"\t"+"Valor: "+valor);
     }
     
 }

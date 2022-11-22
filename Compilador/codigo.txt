@@ -28,9 +28,9 @@ ee{
     }
     else 1;
 
-    i8 d, q,i,c;
+    f32 w;
     if (i<c)then
-        d=:q;
+        d=:aa(i)+q;
     end_if
     i8 num;
     fun awf(i8 num): f32{

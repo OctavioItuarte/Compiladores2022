@@ -64,15 +64,24 @@ ListCte : AsigCte
 	    | ListCte ',' AsigCte
         ;
 
-AsigCte: ID ASIGNACION CTE_ENTERA {tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "I8")); estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
-	   | ID ASIGNACION signo CTE_ENTERA {tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "I8")); estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval + $4.sval);}
-	   | ID ASIGNACION  CTE_FLOTANTE {tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "F32")); estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
-	   | ID ASIGNACION signo CTE_FLOTANTE {tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "F32")); estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval + $4.sval);}
+
+AsigCte: ID ASIGNACION CTE_ENTERA {if (!mismoTipoIDCte($1.sval, $3.sval)) 
+										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+									tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "I8")); estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
+	   | ID ASIGNACION signo CTE_ENTERA {if (!mismoTipoIDCte($1.sval, $4.sval)) 
+	   										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+	   									tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "I8")); estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval + $4.sval);}
+	   | ID ASIGNACION  CTE_FLOTANTE {if (!mismoTipoIDCte($1.sval, $3.sval)) 
+	   									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+									tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "F32")); estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
+	   | ID ASIGNACION signo CTE_FLOTANTE {if (!mismoTipoIDCte($1.sval, $3.sval)) 
+	   										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+	   									  tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "F32")); estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval + $4.sval);}
 	   | ASIGNACION cte {AgregarErrorSintactico("Se espera un identificador");}
 	   | ID ASIGNACION  {AgregarErrorSintactico("Se espera una constante ");}
 	   | ID cte {AgregarErrorSintactico("Se espera '=:' ");}
        ;
-
+	   
 Tipo: I8 {estructuraActual.setTipo("I8");}
     | F32 {estructuraActual.setTipo("F32");}
     ;
@@ -82,9 +91,30 @@ ListVariables: ID ',' ListVariables {tablaDeSimbolos.add(new Simbolo($1.sval+":"
 			 | ID ListVariables {AgregarErrorSintactico("Se espera ',' ");}
              ;
 
-HeaderFuncion: Fun '(' Parametro ',' Parametro ')' ':' Tipo {tablaDeSimbolos.setTipo(ambito, estructuraActual.getTipo()); }
-			 | Fun '(' Parametro ')' ':' Tipo {tablaDeSimbolos.setTipo(ambito, estructuraActual.getTipo());}
-			 | Fun '(' ')' ':' Tipo {tablaDeSimbolos.setTipo(ambito, estructuraActual.getTipo());}
+HeaderFuncion: Fun '(' Parametro ',' Parametro ')' ':' Tipo {tablaDeSimbolos.setTipo(funcionActual+":"+ambito, estructuraActual.getTipo());
+															if (!parametrosFormales.containsKey(funcionActual+":"+ambito)){
+																List<Simbolo> listparametros=parametros;
+																parametrosFormales.put(funcionActual+":"+ambito, listparametros);
+															}
+															parametros=new ArrayList<>();
+															ambito= ambito+":"+funcionActual;
+															}
+			 | Fun '(' Parametro ')' ':' Tipo {tablaDeSimbolos.setTipo(funcionActual+":"+ambito, estructuraActual.getTipo());
+			 									if (!parametrosFormales.containsKey(funcionActual+":"+ambito)){
+													List<Simbolo> listparametros=parametros;
+													parametrosFormales.put(funcionActual+":"+ambito, listparametros);
+												}
+												parametros=new ArrayList<>();
+												ambito= ambito+":"+funcionActual;
+												}
+			 | Fun '(' ')' ':' Tipo {tablaDeSimbolos.setTipo(funcionActual+":"+ambito, estructuraActual.getTipo());
+			 						if (!parametrosFormales.containsKey(funcionActual+":"+ambito)){
+										List<Simbolo> listparametros=parametros;
+										parametrosFormales.put(funcionActual+":"+ambito, listparametros);
+									}
+									parametros=new ArrayList<>();
+									ambito= ambito+":"+funcionActual;
+									}
 
 			 | FUN '(' Parametro ',' Parametro ')' ':' Tipo {AgregarErrorSintactico("Se espera el identificador de la funcion ");}
 	   		 | FUN '(' Parametro ')' ':' Tipo {AgregarErrorSintactico("Se espera el identificador de la funcion ");}
@@ -94,16 +124,19 @@ HeaderFuncion: Fun '(' Parametro ',' Parametro ')' ':' Tipo {tablaDeSimbolos.set
 	   		 | Fun '(' ')' ':'  {AgregarErrorSintactico("Se espera el tipo de retorno de la funcion");}
 			 ;
 
-Fun: FUN ID {estructuraActual=new EstructuraTercetos($2.sval+":"+ambito);
-			 ambito= ambito+":"+$2.sval; tablaDeSimbolos.add(new Simbolo(ambito, 269, "identificador_funcion"));
+Fun: FUN ID {tablaDeSimbolos.add(new Simbolo($2.sval+":"+ambito, 269, "identificador_funcion"));
+			 funcionActual=$2.sval;
+			 estructuraActual=new EstructuraTercetos(ambito+":"+$2.sval);
 			 listEstructurasSeguimiento.add(estructuraActual);
 			 listEstructurasTercetos.add(estructuraActual);
+			 dentroDeFun=true;
 			 }
 	;
 
 Funcion: HeaderFuncion '{' Cuerpo '}' {desconcatenarAmbito(); 
 									   listEstructurasSeguimiento.remove(listEstructurasSeguimiento.size()-1);
 									   estructuraActual=listEstructurasSeguimiento.get(listEstructurasSeguimiento.size()-1);
+									   dentroDeFun=false;
 									   }
 	   | HeaderFuncion '{' '}' {AgregarErrorSintactico("Se espera el cuerpo de la funcion");}
 	   | '{' Cuerpo '}' {AgregarErrorSintactico("Se espera el header de la funcion");}
@@ -111,7 +144,9 @@ Funcion: HeaderFuncion '{' Cuerpo '}' {desconcatenarAmbito();
 	   ;
 
 
-Parametro: Tipo ID {tablaDeSimbolos.add(new Simbolo($2.sval+":"+ambito,269,"parametro", estructuraActual.getTipo()));}
+Parametro: Tipo ID {Simbolo simbolo= new Simbolo($2.sval+":"+ambito+":"+funcionActual,269,"parametro", estructuraActual.getTipo());
+					tablaDeSimbolos.add(simbolo);
+					parametros.add(simbolo);}
 	     | ID {AgregarErrorSintactico("Se espera tipo de parametro");}
 		 ;
 
@@ -125,14 +160,21 @@ SentenciaEjecutable: Seleccion
 		           | Salida ';'
                    ;
 
-Asig: ID ASIGNACION Expresion ';'{estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), estructuraActual.getRefTerceto(1));}
-    | ID ASIGNACION ID ';' {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-    | ID ASIGNACION cte ';' {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
-	| ID ASIGNACION signo cte ';' {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval + $4.sval);}
+Asig: ID ASIGNACION Expresion ';'{if (!mismoTipoExpID($1.sval)) 
+									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea())); 
+								estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), estructuraActual.getRefTerceto(1));} 
+    | ID ASIGNACION ID ';' {if (!mismoTipoIds($1.sval, $3.sval)) 
+								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea())); 
+							estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
+    | ID ASIGNACION cte ';' {if (!mismoTipoIDCte($1.sval, $3.sval))
+								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+							estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);} 
+	| ID ASIGNACION signo cte ';' {if (!mismoTipoIDCte($1.sval, $4.sval))
+										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea())); 
+									estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval + $4.sval);} 
 	| ID error ';' {AgregarErrorSintactico("Se espera '=:'");}
-    ;
 
-HeaderWhen: WHEN Condicion THEN {ambito= ambito+":"+"when";}
+HeaderWhen: WHEN Condicion THEN 
 		  | Condicion THEN {AgregarErrorSintactico("Se espera un if o un when");}
 		  | WHEN Condicion {AgregarErrorSintactico("Se espera la palabra reservada then");}
 		  ;
@@ -142,39 +184,58 @@ WhenCondicion: HeaderWhen '{' ListSentencias '}'
 			 ;
 
 
-Salida : OUT '(' CADENA_MULT ')' 
+Salida : OUT '(' CADENA_MULT ')' {estructuraActual.crearTerceto("OUT", $3.sval, null);}
 	   |'(' CADENA_MULT ')' {AgregarErrorSintactico("Se espera un out");}
 	   ;
 			
 
-ParametroReal: cte
-			 | signo cte
-			 | ID 
-             ;
+
 			 
-Expresion: ID signo ID {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-	     | ID signo cte {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);} 
-	     | Expresion signo ID {estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-	     | Expresion signo cte {estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), $3.sval);}
-	     | ID '*' ID {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-	     | ID '/' ID {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-	     | ID '*' cte {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
-	     | ID '/' cte {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
-	     | Expresion '*' ID  {estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-	     | Expresion '/' ID {estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-	     | Expresion '*' cte {estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), $3.sval);}
-	     | Expresion '/' cte {estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), $3.sval);}
-		 | ConversionExplicita
-		 | cte signo ID {estructuraActual.crearTerceto($2.sval, $1.sval, tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-		 | cte '*' ID {estructuraActual.crearTerceto($2.sval, $1.sval, tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-		 | cte '/' ID {estructuraActual.crearTerceto($2.sval, $1.sval, tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-		 | ID ListParametrosInv
+Expresion: ID signo ID {
+					if (!mismoTipoIds($1.sval, $3.sval)) 
+						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea())); 
+					estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));
+					} 
+	     | ID signo cte {
+			if (!mismoTipoIDCte($1.sval, $3.sval)) 
+		 		errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea())); 
+			estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);
+			}  
+	     | Expresion signo ID {
+			if (!mismoTipoExpID($3.sval))
+				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+			estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));} 
+	     | Expresion signo cte {
+			if (!mismoTipoExpCte($3.sval)) 
+				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+			estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), $3.sval);
+			} 
+	     | ID '*' ID {if (!mismoTipoIds($1.sval, $3.sval))
+						 errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+					estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));} 
+	     | ID '/' ID {if (!mismoTipoIds($1.sval, $3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));} 
+	     | ID '*' cte {if (!mismoTipoIDCte($1.sval, $3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);} 
+	     | ID '/' cte {if (!mismoTipoIDCte($1.sval, $3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);} 
+	     | Expresion '*' ID  {if (!mismoTipoExpID($3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));} 
+	     | Expresion '/' ID {if (!mismoTipoExpID($3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));} 
+	     | Expresion '*' cte {if (!mismoTipoExpCte($3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), $3.sval);} 
+	     | Expresion '/' cte {if (!mismoTipoExpCte($3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), $3.sval);} 
+		 | ConversionExplicita 
+		 | cte signo ID {if (!mismoTipoIDCte($3.sval, $1.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, $1.sval, tablaDeSimbolos.getRefSimbolo($3.sval, ambito));} 
+		 | cte '*' ID {if (!mismoTipoIDCte($3.sval, $1.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, $1.sval, tablaDeSimbolos.getRefSimbolo($3.sval, ambito));} 
+		 | cte '/' ID {if (!mismoTipoIDCte($3.sval, $1.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, $1.sval, tablaDeSimbolos.getRefSimbolo($3.sval, ambito));} 
+		 | ID ListParametrosInv 
          ;
 
 ListParametrosInv: '(' ')'
 				 | '(' ParametroReal ')'
 				 | '(' ParametroReal ',' ParametroReal ')'
 				 ;
+
+ParametroReal: cte {parametrosReales.add($1.sval);}
+			 | signo cte {parametrosReales.add($1.sval+$2.sval);}
+			 | ID {parametrosReales.add(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));}
+             ;
 
 ConversionExplicita: TOF32 '(' Expresion ')'
 				   | TOF32 '('')' {AgregarErrorSintactico("Se espera expresion");}
@@ -189,15 +250,6 @@ cte: CTE_FLOTANTE
    | CTE_ENTERA {chequearRangoEntero($1.sval);}
    ;
 
-SentenciaReturn: RETURN '(' ID ')' ';'
-	  		   | RETURN '(' cte ')' ';'
-	  		   | RETURN '(' Expresion ')' ';'
-			   | RETURN '(' ID ')' {AgregarErrorSintactico("Falta ;");}
-	  		   | RETURN '(' cte ')' {AgregarErrorSintactico("Falta ;");}
-	  		   | RETURN '(' Expresion ')' {AgregarErrorSintactico("Falta ;");}
-	  		   | RETURN ';' {AgregarErrorSintactico("Falta expresion de retorno");}
-			   ;
-
 ListSentenciasIf: SentenciaEjecutable ListSentenciasIf
                 | SentenciaCorte ListSentenciasIf
                 | SentenciaEjecutable
@@ -208,25 +260,26 @@ HeaderIf: IF Condicion THEN
         | error THEN {yyerror("falta cerrar parentesis");}
         ;
 
-SentenciasIf: SentenciaEjecutable
-        	| '{' ListSentenciasIf '}'
-        	;
 
-
-CuerpoIf: SentenciasIf
+CuerpoIf: SentenciaEjecutable
+        | '{' ListSentenciasIf '}'
         ;
 
 Else: ELSE {estructuraActual.completarTercetoIf(2);
 			estructuraActual.crearTerceto("BI", null, null);
-			estructuraActual.addTercetoIf();}
+			estructuraActual.addTercetoIf();
+			estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);}
 	;
 
-CuerpoElse: Else CuerpoIf END_IF {estructuraActual.completarTercetoIf(1);}
+CuerpoElse: Else CuerpoIf END_IF 
           | Else CuerpoIf error {yyerror("falta palabra reservada end_if");}
           ;
 
-Seleccion: HeaderIf CuerpoIf END_IF {estructuraActual.completarTercetoIf(1);}
-         | HeaderIf CuerpoIf CuerpoElse
+Seleccion: HeaderIf CuerpoIf END_IF {estructuraActual.completarTercetoIf(1);
+									 estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);}
+         | HeaderIf CuerpoIf CuerpoElse {estructuraActual.completarTercetoIf(1);
+								  		 estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);}
+
          | HeaderIf CuerpoIf error {yyerror("falta palabra reservada end_if");}
 		 | error ELSE {AgregarErrorSintactico("Se espera '{' '}' ");}
 		 | error END_IF {AgregarErrorSintactico("Se espera '{' '}' ");}
@@ -246,23 +299,24 @@ Comparador: '<'
           | DISTINTO
           ;
 
-Comparacion: Expresion Comparador Expresion {estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(2), estructuraActual.getRefTerceto(1));}
-           | Expresion Comparador cte {estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), $3.sval);}
-		   | Expresion Comparador signo cte {estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), $3.sval + $4.sval );}
-           | cte Comparador Expresion {estructuraActual.crearTerceto($2.sval, $1.sval, estructuraActual.getRefTerceto(1));}
-		   | signo cte Comparador Expresion {estructuraActual.crearTerceto($3.sval, $1.sval + $2.sval, estructuraActual.getRefTerceto(1));}
-           | Expresion Comparador ID {estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-           | ID Comparador Expresion {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), estructuraActual.getRefTerceto(1));}
-		   | cte Comparador ID {estructuraActual.crearTerceto($2.sval, $1.sval, tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-		   | signo cte Comparador ID {estructuraActual.crearTerceto($3.sval, $1.sval + $2.sval, tablaDeSimbolos.getRefSimbolo($4.sval, ambito));}
-		   | ID Comparador cte {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
-		   | ID Comparador signo cte {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval + $4.sval);}
-		   | ID Comparador ID {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-		   | cte Comparador cte {estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);}
+Comparacion: Expresion Comparador Expresion {if (!mismoTipo()) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(2), estructuraActual.getRefTerceto(1));}
+           | Expresion Comparador cte {if (!mismoTipoExpCte($3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), $3.sval);}
+		   | Expresion Comparador signo cte {if (!mismoTipoExpCte($4.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), $3.sval + $4.sval );}
+           | cte Comparador Expresion {if (!mismoTipoExpCte($1.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, $1.sval, estructuraActual.getRefTerceto(1));}
+		   | signo cte Comparador Expresion {if (!mismoTipoExpCte($2.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($3.sval, $1.sval + $2.sval, estructuraActual.getRefTerceto(1));}
+           | Expresion Comparador ID {if (!mismoTipoExpID($3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, estructuraActual.getRefTerceto(1), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
+           | ID Comparador Expresion {if (!mismoTipoExpID($1.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), estructuraActual.getRefTerceto(1));}
+		   | cte Comparador ID {if (!mismoTipoIDCte($3.sval, $1.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, $1.sval, tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
+		   | signo cte Comparador ID {if (!mismoTipoIDCte($4.sval, $2.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($3.sval, $1.sval + $2.sval, tablaDeSimbolos.getRefSimbolo($4.sval, ambito));}
+		   | ID Comparador cte {if (!mismoTipoIDCte($1.sval, $3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
+		   | ID Comparador signo cte {if (!mismoTipoIDCte($1.sval, $4.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval + $4.sval);}
+		   | ID Comparador ID {if (!mismoTipoIds($1.sval, $3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
+		   | cte Comparador cte {if (!mismoTipoCtes($1.sval, $3.sval)) errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);}
 		   | Comparador error {yyerror("falta expresion en la comparacion");}
 		   | error ID {yyerror("falta comparador");}
 		   | error cte {yyerror("falta comparador");}
            ;
+
 
 
 ListSentenciasFor: ListSentenciasFor SentenciaEjecutable
@@ -273,9 +327,9 @@ ListSentenciasFor: ListSentenciasFor SentenciaEjecutable
                  | SentenciaCorte
                  ;
 
-HeaderFor: FOR '(' AsigFor ';' CondicionFor ';' signo CTE_ENTERA ')' 
-				{estructuraActual.addNumCondicionFor();
-				 estructuraActual.crearTerceto("BF", estructuraActual.getRefTerceto(1), null);
+HeaderFor: FOR '(' AsigFor ';' CondicionFor ';' signo CTE_ENTERA ')'
+				{estructuraActual.crearTerceto("BF", estructuraActual.getRefTerceto(1), null);
+				 refEtiqueta = estructuraActual.getRefTerceto(2);
 				 estructuraActual.addTercetoFor();
 				 estructuraActual.crearTerceto($7.sval, estructuraActual.getIdFor(), $8.sval);
 				 estructuraActual.crearTerceto("=:", estructuraActual.getIdFor(), estructuraActual.getRefTerceto(1));
@@ -285,6 +339,7 @@ HeaderFor: FOR '(' AsigFor ';' CondicionFor ';' signo CTE_ENTERA ')'
 		 | FOR '(' AsigFor ';' CondicionFor ';' CTE_ENTERA ')'
 				{estructuraActual.addNumCondicionFor();
 				 estructuraActual.crearTerceto("BF", estructuraActual.getRefTerceto(1), null);
+				 refEtiqueta = estructuraActual.getRefTerceto(2);
 				 estructuraActual.addTercetoFor();
 				 estructuraActual.crearTerceto("+", estructuraActual.getIdFor(), $7.sval);
 				 estructuraActual.crearTerceto("=:", estructuraActual.getIdFor(), estructuraActual.getRefTerceto(1));
@@ -299,16 +354,19 @@ HeaderForID: ID ASIGNACION HeaderFor {estructuraActual.crearListTercetoBreakCte(
 										}
 		   ;
 
-HeaderEtiqueta: ID ':' HeaderFor {//tablaDeSimbolos.add(new Simbolos($1.sval+":"+ambito, 269, "etiqueta_for")); estructuraActual.addEtiquetaFor($1.sval);
-									}
+HeaderEtiqueta: ID ':' HeaderFor {estructuraActual.addEtiquetaFor($1.sval); estructuraActual.addRefEtiqueta(refEtiqueta);}
 			  ;
 
 AsigFor: ID ASIGNACION CTE_ENTERA
-		{estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));
+		{if (!mismoTipoIDCte($1.sval, $3.sval)) 
+			errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));
 		estructuraActual.crearTerceto($2.sval, estructuraActual.getIdFor(), $3.sval);
 	 	}
 	   | ID ASIGNACION ID
-		{estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));
+		{if (!mismoTipoIds($1.sval, $3.sval)) 
+			errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));
 		estructuraActual.crearTerceto($2.sval, estructuraActual.getIdFor(), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));
 	 	}
        ;
@@ -327,12 +385,14 @@ SentenciaControl: HeaderFor CuerpoFor {
 					estructuraActual.completarTercetosBreak(1);
 					estructuraActual.borrarListTercetosBreak();
 					dentroDeFor=false;
+					estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(),null,null);
 				}
 				| HeaderEtiqueta CuerpoFor {
 					//estructuraActual.addRefEtiqueta();
 					estructuraActual.completarTercetosBreak(1);
 					estructuraActual.borrarListTercetosBreak();
 					dentroDeFor=false;
+					estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(),null,null);
 				}
 				| HeaderForID CuerpoFor ELSE cte ';' {
 					estructuraActual.completarTercetosBreak(1);
@@ -342,6 +402,7 @@ SentenciaControl: HeaderFor CuerpoFor {
 					dentroDeFor=false;
 					esperandoBreakcte=false;
 					estructuraActual.borrarIdAsigFor();
+					estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(),null,null);
 					}
 
 				| HeaderForID CuerpoFor ELSE signo cte ';' {
@@ -353,18 +414,65 @@ SentenciaControl: HeaderFor CuerpoFor {
 					dentroDeFor=false;
 					esperandoBreakcte=false;
 					estructuraActual.borrarIdAsigFor();
+					estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(),null,null);
 				}
 				;
 
 
-CondicionFor: ID Comparador ID {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
-			| ID Comparador Expresion {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), estructuraActual.getRefTerceto(1));}
-			| ID Comparador CTE_ENTERA {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
-			| ID Comparador signo CTE_ENTERA {estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval+$4.sval);}
+CondicionFor: ID Comparador ID {if (!mismoTipoIds($1.sval, $3.sval)) 
+									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+								estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+								estructuraActual.addNumCondicionFor();
+								estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
+			| ID Comparador Expresion {if (!mismoTipoExpID($1.sval, $3.sval)) 
+											errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+									   estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+									   estructuraActual.addNumCondicionFor();
+									   estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), estructuraActual.getRefTerceto(1));}
+			| ID Comparador CTE_ENTERA {if (!mismoTipoIDCte($1.sval, $3.sval)) 
+											errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+										estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+										estructuraActual.addNumCondicionFor();
+										estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);}
+			| ID Comparador signo CTE_ENTERA {if (!mismoTipoIDCte($1.sval, $3.sval)) 
+												errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+											  estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+											  estructuraActual.addNumCondicionFor();
+											  estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval+$4.sval);}
             ;
 
-SentenciaCorte: SentenciaReturn 
-        	  | BREAK ';' {
+SentenciaReturn: RETURN '(' ID ')' ';' {
+					if(!dentroDeFun){
+						errores_semanticos.add(new ErrorLinea("No se encuentra dentro de una funcion", this.linea.getNumeroLinea()));
+						System.out.println("No se encuentra dentro de una funcion");
+					}
+					else
+						estructuraActual.crearTerceto("=:", ambito, tablaDeSimbolos.getRefSimbolo($3.sval, ambito));
+				}
+	  		  | RETURN '(' cte ')' ';' {
+					if(!dentroDeFun){
+						errores_semanticos.add(new ErrorLinea("No existe ID para la asignacion", this.linea.getNumeroLinea()));
+						System.out.println("No existe ID para la asignacion");
+					}
+					else
+						estructuraActual.crearTerceto("=:", ambito, $3.sval);
+				}
+	  		  | RETURN '(' Expresion ')' ';' {
+					if(!dentroDeFun){
+						errores_semanticos.add(new ErrorLinea("No existe ID para la asignacion", this.linea.getNumeroLinea()));
+						System.out.println("No existe ID para la asignacion");
+					}
+					else
+						estructuraActual.crearTerceto("=:", ambito, estructuraActual.getRefTerceto(1));
+				}
+			  | RETURN '(' ID ')' {AgregarErrorSintactico("Falta ;");}
+	  		  | RETURN '(' cte ')' {AgregarErrorSintactico("Falta ;");}
+	  		  | RETURN '(' Expresion ')' {AgregarErrorSintactico("Falta ;");}
+	  		  | RETURN ';' {AgregarErrorSintactico("Falta expresion de retorno");}
+			  ;
+
+SentenciaCorte: SentenciaReturn
+			  | BREAK ';' {
 				if(dentroDeFor){
 					estructuraActual.crearTerceto("BI", null, null);
 					estructuraActual.guardarTercetoBreak();
@@ -397,11 +505,9 @@ SentenciaCorte: SentenciaReturn
 			  	}
 			  }
         	  | CONTINUE ':' ID ';' {
-				//if ((dentroDeFor) && (estructuraActual.existeEtiqueta($3.sval))){
-					//estructuraActual.crearTerceto("BI", estructuraActual.getRefTercetoEtiqueta($3.sval), null);
-					//estructuraActual.guardarTercetoEtiquetaFor();
-
-				//}
+				if ((dentroDeFor) && (estructuraActual.existeEtiquetaFor($3.sval))){
+					estructuraActual.crearTerceto("BI", estructuraActual.getRefEtiqueta($3.sval), null);
+				}
 			  }
 			  ;
 
@@ -419,10 +525,17 @@ public static List<EstructuraTercetos> listEstructurasSeguimiento=new ArrayList<
 public static List<EstructuraTercetos> listEstructurasTercetos=new ArrayList<>();
 public static EstructuraTercetos estructuraActual;
 
+public static HashMap<String, List<Simbolo>> parametrosFormales= new HashMap<>();
+public static List<Simbolo> parametros= new ArrayList<>();
+public static List<String> parametrosReales= new ArrayList<>();
+
 public static boolean dentroDeFor=false;
 public static boolean esperandoBreakcte=false;
 public static boolean dentroDeFun=false;
-
+public static String funcionActual;
+public static String refEtiqueta = null;
+public static String tipoActual = "";
+public static String tipoAnterior = "";
 //private String tipo; //guarda el tipo de la lista de id que se estan declarando
 
 public static String ambito = "";
@@ -431,7 +544,27 @@ public static String ambito = "";
 
 AnalizadorLexico lexico;
 
+    public static void chequearYAsignarParametros(List<String> lista1, List<Simbolo> lista2){
+		int n=lista1.size();
+		boolean errorTipo=false;
+		
+		if(n==lista2.size()){
+			for(int i=0; i<n; i++)
+				if(!tablaDeSimbolos.getTipo(lista1.get(i)).equals(lista2.get(i).getTipo()))
+					errorTipo=true;
+				
+			
+			if(errorTipo){
+				System.out.println("Hay parametro/s de distinto tipo");
+				errores_semanticos.add(new ErrorLinea("Hay parametro/s de distinto tipo", linea.getNumeroLinea()));
+			}
 
+		}
+		else{
+			System.out.println("La cantidad de parametros es incorrecta");
+			errores_semanticos.add(new ErrorLinea("La cantidad de parametros es incorrecta", linea.getNumeroLinea()));
+		}
+	}
 
 	public Parser(AnalizadorLexico lexico){
 		this.lexico = lexico;
@@ -464,7 +597,11 @@ AnalizadorLexico lexico;
 	        AnalizadorLexico AL=new AnalizadorLexico(tablaDeSimbolos, contenido, errores_lexicos, linea);
     	    Parser parser= new Parser(AL);
             System.out.println("parse: "+parser.yyparse());
-			
+			if((errores_lexicos.isEmpty()) && (errores_sintacticos.isEmpty()) && (errores_semanticos.isEmpty())){
+				System.out.println("no hay erroressssssssssssssssssssssssssssssssss");
+				GeneradorCodigo.setListaEstructuras(listEstructurasTercetos);
+				GeneradorCodigo.generarCodigo();
+			}
         }
         catch (IOException e) {
               // TODO Auto-generated catch block
@@ -500,6 +637,8 @@ AnalizadorLexico lexico;
 		for(int i=0; i<n; i++){
 			listEstructurasTercetos.get(i).imprimir();
 		}
+		
+		System.out.println(GeneradorCodigo.getCodigoGenerado());
 	}
 
 
@@ -519,5 +658,80 @@ AnalizadorLexico lexico;
 		for (int i = 1 ; i < len ; i++)
 			nuevoAmbito = nuevoAmbito + ":" + a[i];
 		ambito = nuevoAmbito;
+	}
+
+	public boolean mismoTipoIds(String val1, String val2){
+		String lex1 = tablaDeSimbolos.getRefSimbolo(val1, ambito);
+		String lex2 = tablaDeSimbolos.getRefSimbolo(val2, ambito);
+		if (tablaDeSimbolos.getTipo(lex1) == tablaDeSimbolos.getTipo(lex2)){
+			tipoAnterior = tipoActual;
+			tipoActual = tablaDeSimbolos.getTipo(lex1);
+			return true;
+		}
+		else {
+			tipoActual = "";
+			return false;
+			}
+	}
+
+	public boolean mismoTipoCtes(String val1, String val2){
+		String tipo1 = tablaDeSimbolos.getTipo(val1);
+		String tipo2 = tablaDeSimbolos.getTipo(val2);
+		if (tipo1.equals(tipo2)){
+			tipoAnterior = tipoActual;
+			tipoActual = tablaDeSimbolos.getTipo(lex1);
+			return true;
+		}
+		else {
+			tipoActual = "";
+			return false;
+			}
+	}
+
+	public boolean mismoTipoIDCte(String val1, String val2){
+		String lex1 = tablaDeSimbolos.getRefSimbolo(val1, ambito);
+		String tipo = tablaDeSimbolos.getTipo(val2);
+		if (tablaDeSimbolos.getTipo(lex1) == tipo){
+			tipoAnterior = tipoActual;
+			tipoActual = tablaDeSimbolos.getTipo(lex1);
+			return true;
+		}
+		else {
+			tipoActual = "";
+			return false;
+			}
+	}
+
+	public boolean mismoTipoExpCte(String val){
+		String tipo = tablaDeSimbolos.getTipo(val);
+		if (tipoActual == tipo){
+			return true;
+		}
+		else {
+			tipoActual = "";
+			return false;
+			}
+	}
+
+	public boolean mismoTipoExpID(String val){
+		String tipo = tablaDeSimbolos.getRefSimbolo(val1, ambito);
+		if (tipoActual == tipo){
+			return true;
+		}
+		else {
+			tipoActual = "";
+			return false;
+			}
+	}
+
+	public boolean mismoTipo(){
+		if (tipoActual == tipoAnterior){
+			return true;
+		}
+		else {
+			tipoActual = "";
+			tipoAnterior = "";
+			return false;
+			}
 	}
 

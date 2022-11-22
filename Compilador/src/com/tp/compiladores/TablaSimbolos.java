@@ -13,6 +13,40 @@ public class TablaSimbolos{
         tabla=new HashMap<>();
     }
 
+    public List<String> getNumeros(){
+        List<String> resultado=new ArrayList<>();
+        for(Map.Entry<String, Simbolo> entry : tabla.entrySet()){
+            if(entry.getValue().getUso().equals("valor_numerico")){
+                resultado.add(entry.getKey());
+            }
+        }
+        return resultado;
+    }
+
+    public List<Simbolo> getConstantes(){
+        List<Simbolo> resultado=new ArrayList<>();
+        String uso;
+        for(Map.Entry<String, Simbolo> entry : tabla.entrySet()){
+            uso=entry.getValue().getUso();
+            if((uso!=null) && (uso.equals("constante"))){
+                resultado.add(entry.getValue());
+            }
+        }
+        return resultado;
+    }
+
+    public List<Simbolo> getIds(){
+        List<Simbolo> resultado= new ArrayList<>();
+        String uso;
+        for(Map.Entry<String, Simbolo> entry : tabla.entrySet()){
+            uso=entry.getValue().getUso();
+            if((uso!=null) && (!uso.equals("constante"))){
+                resultado.add(entry.getValue());
+            }
+        }
+        return resultado;
+    }
+
     private String cambiarAmbito(String[] ambitos, int n){
         String resultado=ambitos[0];
         for(int i=1; i<n; i++){
@@ -42,6 +76,12 @@ public class TablaSimbolos{
     }
 
 
+    public String getTipo(String lexema){
+        if(tabla.containsKey(lexema))
+            return(tabla.get(lexema).getTipo());
+        return null;
+    }
+
     public void setTipo(String lexema, String tipo){
 
         tabla.get(lexema).setTipo(tipo);
@@ -62,6 +102,19 @@ public class TablaSimbolos{
                 }
             }
         }
+
+    public String getRefFuncion(String lexema, String ambito){
+        String existe=existeSimboloAmbito(lexema, ambito);
+        if(existe!=null)
+        // debe buscar el simbolo en la tabla en dicho ambito.
+            return (existe);
+        else{
+            System.out.println("Funcion " + lexema +" no declarada");
+            ErrorLinea err=new ErrorLinea("Funcion " + lexema +" no declarada", this.linea.getNumeroLinea());
+            erroresSemanticos.add(err);
+        }
+        return null;
+    }
 
     public String getRefSimbolo(String lexema, String ambito){ //devuelve el lexema al simbolo en la tabla
         String existe=existeSimboloAmbito(lexema, ambito);
@@ -84,6 +137,7 @@ public class TablaSimbolos{
             System.out.println(entry.getValue().imprimir());
         }
     }
-
+    
+    
 
 }

@@ -20,8 +20,8 @@ public class AccionSemantica3 extends AccionSemantica {
 		try{
 			int number = Integer.parseInt(l);
 			if (number<=128){
-				System.out.println("Constante entera: "+l+" "+267);
-				Simbolo simbolo=new Simbolo(lexema, 267);
+				//System.out.println("Constante entera: "+l+" "+267);
+				Simbolo simbolo=new Simbolo(lexema, 267, "valor_numerico");
 				tabla.add(simbolo);
 				return 267;
 			}

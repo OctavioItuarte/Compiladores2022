@@ -14,7 +14,7 @@ public class AccionSemantica9 extends AccionSemantica{
         super.nuevaPosicion = nuevaPos + 1;
         Simbolo simbolo=new Simbolo(lexema, 271);
 		tabla.add(simbolo);
-        System.out.println("Cadena multilinea: "+ super.lexema+" "+271);
+        //System.out.println("Cadena multilinea: "+ super.lexema+" "+271);
         return 271;
     }
 }

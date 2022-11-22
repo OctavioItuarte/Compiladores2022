@@ -22,7 +22,7 @@ public class AccionSemantica2 extends AccionSemantica {
 		}
 		
 		if (token != -1){
-			System.out.println("Palabra reservada: "+l+" "+token);
+			//System.out.println("Palabra reservada: "+l+" "+token);
 			return token;
 		}
 		else {
@@ -34,7 +34,7 @@ public class AccionSemantica2 extends AccionSemantica {
 			//Simbolo simbolo=new Simbolo(lexema, 269);
 			//tabla.add(simbolo);
 			
-			System.out.println("ID: "+ super.lexema+" "+269);
+			//System.out.println("ID: "+ super.lexema+" "+269);
 			return 269;
 		}
 	}

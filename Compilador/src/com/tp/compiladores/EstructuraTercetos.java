@@ -24,7 +24,7 @@ public class EstructuraTercetos {
 
     private List<Terceto> tercetosBFfor=new ArrayList<>();
 
-    private HashMap<String,Integer> refEtiquetasFor = new HashMap<>();
+    private HashMap<String,String> refEtiquetasFor = new HashMap<>();
 
     private List<String> EtiquetasFor = new ArrayList<>();
 
@@ -38,16 +38,17 @@ public class EstructuraTercetos {
         //this.errores_semanticos=errores_semanticos;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////
-    /* 
-    public void addRefEtiqueta(){
-        this.refEtiquetasFor.put(EtiquetasFor.get(EtiquetasFor.size() -1), this.getRefTerceto(1));
+    public String getNombre(){
+        return this.nombre;
     }
 
-    public void addEtiquetaFor(String e){
-        if (! this.existeEtiquetaFor(e))
-            this.EtiquetasFor.add(e);
-        else System.out.println("La etiqueta "+ e +" ya esta siendo utilizada" )
+    ////////////////////////////////////////////////////////////////////////////////////
+      public void addRefEtiqueta(String terceto){ // asocio la etiqueta a el lugar donde debo saltar
+        this.refEtiquetasFor.put(EtiquetasFor.get(EtiquetasFor.size()-1), terceto);
+    }
+
+    public void addEtiquetaFor(String e){ //agrego la etiqueta
+        this.EtiquetasFor.add(e);
     }
 
     public boolean existeEtiquetaFor(String e){
@@ -56,18 +57,9 @@ public class EstructuraTercetos {
         else return false;
     }
 
-    public void completarTercetosEtiquetaFor(int num){
-        for(Terceto t: tercetosEtiquetasFor){
-            t.setValor2(String.valueOf(this.listTercetos.size()-1+num));
-        }
+    public String getRefEtiqueta(String etiqueta){
+        return refEtiquetasFor.get(etiqueta);
     }
-
-    public String getRefTercetoEtiqueta(String e) {
-        int num = refEtiquetaFor.get(e);
-        return ("["+ num + "]");
-        //devuelve la posicion dentro de estructuraTercetos, donde se encuentra el terceto referenciado
-    }
-    */
     ////////////////////////////////////////////////////////////////////////////////////
     
     public void guardarTercetoBreak(){

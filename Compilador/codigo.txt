@@ -27,11 +27,8 @@ ee{
         end_if
     }
     else 1;
-
     f32 w;
-    if (i<c)then
-        d=:aa(i)+q;
-    end_if
+    w=:tof32(q+5);
     i8 num;
     fun awf(i8 num): f32{
         num=:0;

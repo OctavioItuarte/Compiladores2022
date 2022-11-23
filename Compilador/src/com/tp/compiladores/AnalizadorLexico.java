@@ -141,35 +141,4 @@ public class AnalizadorLexico {
 		else
 			return 18;
 	}
-
-
-	// public static void main(String[] args) {
-	//     try{
-	//         String contenido = new String(Files.readAllBytes(Paths.get("codigo.txt")));
-	//         AnalizadorLexico AL=new AnalizadorLexico(contenido);
-    // 	    Parser parser= new Parser(AL);
-    //         System.out.println("parse: "+parser.yyparse());
-    //     }
-    //     catch (IOException e) {
-    //           // TODO Auto-generated catch blockVAST:
-    //           e.printStackTrace();
-    //     }
-	// }
-	/*
-	 public static void main(String[] args) throws IOException {
-		 File doc = new File("codigo.txt");
-		 String contenido="";
-		 Scanner obj = new Scanner(doc);
-
-		 while (obj.hasNextLine())
-			 contenido=contenido+"\n"+obj.nextLine();
-	 	AnalizadorLexico AL=new AnalizadorLexico(contenido);
-	 	Token token;
-	 	for (int i=0; i<10; i++){
-	 		token=AL.yyLex();
-	 		System.out.println("token: "+ token.getValor()+" - lexema: "+token.getLexema());
-	 		System.out.println("---------------------");
-	 	}
-	 }
-	*/
 }

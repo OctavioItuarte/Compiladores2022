@@ -179,7 +179,7 @@ HeaderWhen: When Condicion THEN {estructuraActual.crearTercetoWhen(new Terceto("
 		  | When Condicion {AgregarErrorSintactico("Se espera la palabra reservada then");}
 		  ;
 
-When: WHEN {dentroDeWhen=true; }
+When: WHEN {dentroDeWhen=true; marcaWhen = estructuraActual.getRefTerceto(1);}
 
 WhenCondicion: HeaderWhen '{' ListSentencias '}' {estructuraActual.completarTercetoWhen(1);
 												  if(condicionFalsaWhen)
@@ -397,7 +397,6 @@ SentenciaControl: HeaderFor CuerpoFor {
 					estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(),null,null);
 				}
 				| HeaderEtiqueta CuerpoFor {
-					estructuraActual.addRefEtiqueta();
 					estructuraActual.completarTercetosBreak(1);
 					estructuraActual.borrarListTercetosBreak();
 					dentroDeFor=false;
@@ -546,8 +545,7 @@ public static String funcionActual;
 public static String refEtiqueta = null;
 public static String tipoActual = "";
 public static String tipoAnterior = "";
-public static float temp32 = 0; 
-public static int temp8 = 0; 
+public static String marcaWhen= "";
 //private String tipo; //guarda el tipo de la lista de id que se estan declarando
 
 public static String ambito = "";
@@ -675,9 +673,11 @@ AnalizadorLexico lexico;
 	public boolean mismoTipoIds(String val1, String val2){
 		String lex1 = tablaDeSimbolos.getRefSimbolo(val1, ambito);
 		String lex2 = tablaDeSimbolos.getRefSimbolo(val2, ambito);
-		if (tablaDeSimbolos.getTipo(lex1) == tablaDeSimbolos.getTipo(lex2)){
+		String tipo1 = tablaDeSimbolos.getTipo(lex1);
+		String tipo2 = tablaDeSimbolos.getTipo(lex2);
+		if (tipo1 == tipo2){
 			tipoAnterior = tipoActual;
-			tipoActual = tablaDeSimbolos.getTipo(lex1);
+			tipoActual = tipo1;
 			return true;
 		}
 		else {
@@ -691,7 +691,7 @@ AnalizadorLexico lexico;
 		String tipo2 = tablaDeSimbolos.getTipo(val2);
 		if (tipo1.equals(tipo2)){
 			tipoAnterior = tipoActual;
-			tipoActual = tablaDeSimbolos.getTipo(val1);
+			tipoActual = tipo1;
 			return true;
 		}
 		else {
@@ -705,7 +705,7 @@ AnalizadorLexico lexico;
 		String tipo = tablaDeSimbolos.getTipo(val2);
 		if (tablaDeSimbolos.getTipo(lex1) == tipo){
 			tipoAnterior = tipoActual;
-			tipoActual = tablaDeSimbolos.getTipo(lex1);
+			tipoActual = tipo;
 			return true;
 		}
 		else {
@@ -751,4 +751,15 @@ AnalizadorLexico lexico;
 		if (tipoActual.equals("I8"))
 			return true;
 		else return false;
+	}
+
+	public boolean condicionFalsaWhen(){
+		/*String i = marcaWhen.subString(1,marcaWhen.length()-1);
+		int inicio = Integer.parse(i);
+		int fin = Integer.parse(estructuraActual.getRefTerceto(1).subString(1, estructuraActual.getRefTerceto(1).length()-1));
+		int rdo1 = 0;
+		int rdo2 = 0;
+		for (i = inicio; i < finn ; i++){
+
+		}*/
 	}

@@ -10,12 +10,20 @@ public class Simbolo {
     Simbolo(String lexema, int token){
         this.lexema=lexema;
         this.token=token;
+        if (token == 267)
+            this.tipo = "I8";
+        if (token == 268)
+            this.tipo = "F32";
     }
 
     Simbolo(String lexema, int token, String uso){
         this.lexema=lexema;
         this.token=token;
         this.uso=uso;
+        if (token == 267)
+            this.tipo = "I8";
+        if (token == 268)
+            this.tipo = "F32";
     }
 
     Simbolo(String lexema, int token, String uso, String tipo){

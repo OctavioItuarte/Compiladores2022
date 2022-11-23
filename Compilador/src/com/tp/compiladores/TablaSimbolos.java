@@ -40,7 +40,7 @@ public class TablaSimbolos{
         String uso;
         for(Map.Entry<String, Simbolo> entry : tabla.entrySet()){
             uso=entry.getValue().getUso();
-            if((uso!=null) && (!uso.equals("constante"))){
+            if((uso!=null) && ((uso.equals("variable")) || (uso.equals("identificador_funcion")) || (uso.equals("parametro")))){
                 resultado.add(entry.getValue());
             }
         }

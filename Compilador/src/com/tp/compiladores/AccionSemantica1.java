@@ -9,10 +9,12 @@ public class AccionSemantica1 extends AccionSemantica{
 		super.lexema = null;
 	}
 
-	public int Ejecutar(TablaSimbolos tabla, String l, String sim, int nuevaPos, NumeroLinea linea, List<ErrorLinea> error) {
+	public int ejecutar(String l, String sim) {
 		super.lexema = l.concat(sim);
-		super.nuevaPosicion = nuevaPos + 1;
+		super.nuevaPosicion = AnalizadorLexico.posicion + 1;
 		return 0;
 	}
+
+	
 
 }

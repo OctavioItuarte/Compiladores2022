@@ -12,12 +12,12 @@ public class AccionSemantica6 extends AccionSemantica {
 	}
 
 	@Override
-	public int Ejecutar(TablaSimbolos tabla, String l, String sim, int nuevaPos, NumeroLinea linea, List<ErrorLinea> error) {
+	public int ejecutar(String l, String sim) {
 		super.lexema = l;
-		super.nuevaPosicion = nuevaPos;
+		super.nuevaPosicion = AnalizadorLexico.posicion;
 
 		if(sim.equals("\n")){
-			linea.retrocederLinea();
+			Parser.linea.retrocederLinea();
 		}
 		
 		//System.out.println(super.lexema+" "+tipos.getToken(lexema));

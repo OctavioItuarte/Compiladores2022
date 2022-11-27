@@ -11,9 +11,9 @@ public class AccionSemantica5 extends AccionSemantica{
     	tipos = new TokenSimbolos();
 	}
 	
-	public int Ejecutar(TablaSimbolos tabla, String l, String sim, int nuevaPos, NumeroLinea linea, List<ErrorLinea> error) {
+	public int ejecutar(String l, String sim) {
 		super.lexema= l.concat(sim);
-		super.nuevaPosicion= nuevaPos + 1;
+		super.nuevaPosicion= AnalizadorLexico.posicion + 1;
 
 		//System.out.println(super.lexema+" "+tipos.getToken(lexema));
 		return tipos.getToken(lexema);

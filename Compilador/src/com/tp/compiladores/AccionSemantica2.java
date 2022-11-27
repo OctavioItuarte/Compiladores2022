@@ -12,13 +12,13 @@ public class AccionSemantica2 extends AccionSemantica {
 	}
 
 	@Override
-	public int Ejecutar(TablaSimbolos tabla, String l, String sim, int nuevaPos, NumeroLinea linea, List<ErrorLinea> error) { //devuelve token
-		super.nuevaPosicion = nuevaPos;
+	public int ejecutar(String l, String sim) { //devuelve token
+		super.nuevaPosicion = AnalizadorLexico.posicion;
 		super.lexema = l;
         int token = palabrasReservadas.getToken(l);
 
 		if(sim.equals("\n")){
-			linea.retrocederLinea();
+			Parser.linea.retrocederLinea();
 		}
 		
 		if (token != -1){
@@ -28,7 +28,8 @@ public class AccionSemantica2 extends AccionSemantica {
 		else {
 			if (l.length() > 25) {
 				super.lexema = l.substring(0, 25);
-				System.out.println("Linea: "+linea+" WARNING: longitud de identificador no permitida");
+				Parser.errores_lexicos.add(new ErrorLinea("WARNING: longitud de identificador no permitida", Parser.linea.getNumeroLinea()));
+				System.out.println("Linea: "+Parser.linea+" WARNING: longitud de identificador no permitida");
 			}
 			
 			//Simbolo simbolo=new Simbolo(lexema, 269);

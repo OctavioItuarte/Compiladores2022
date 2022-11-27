@@ -9,12 +9,12 @@ public class AccionSemantica4 extends AccionSemantica {
 	}
 
 	@Override
-	public int Ejecutar(TablaSimbolos tabla, String l, String sim, int nuevaPos, NumeroLinea linea, List<ErrorLinea> error) {
+	public int ejecutar(String l, String sim) {
 		super.lexema = l;
-		super.nuevaPosicion = nuevaPos;
+		super.nuevaPosicion = AnalizadorLexico.posicion;
 
 		if(sim.equals("\n")){
-			linea.retrocederLinea();
+			Parser.linea.retrocederLinea();
 		}
 		
 		String n = "";
@@ -42,16 +42,18 @@ public class AccionSemantica4 extends AccionSemantica {
 			System.out.println(number);
 			if( ( (number > 1.17549435E-38 ) && (number < 3.40282347E+38) )|| (number == 0.0) ){
 				//System.out.println("Constante punto flotante: "+ l+" "+ 268);
-				Simbolo simbolo=new Simbolo(lexema, 268,"valor_numerico");
-				tabla.add(simbolo);
+				Simbolo simbolo=new Simbolo(lexema, 268,"valor_numerico", "F32", n);
+				Parser.tablaDeSimbolos.add(simbolo);
 				return 268;
 			} else {
-				System.out.println("Linea: "+linea.getNumeroLinea()+" Error: Rango de float no permitido");
+				Parser.errores_lexicos.add(new ErrorLinea("Error: Rango de float no permitido", Parser.linea.getNumeroLinea()));
+				System.out.println("Linea: "+Parser.linea.getNumeroLinea()+" Error: Rango de float no permitido");
 				return -1 ;
 			}
 		}
 		catch (NumberFormatException ex){
-			System.out.println("Linea: "+linea.getNumeroLinea()+" Error: Formato de float no permitido");
+			Parser.errores_lexicos.add(new ErrorLinea("Error: Formato de float no permitido", Parser.linea.getNumeroLinea()));
+			System.out.println("Linea: "+Parser.linea.getNumeroLinea()+" Error: Formato de float no permitido");
 			return -1;
 		}
 	}

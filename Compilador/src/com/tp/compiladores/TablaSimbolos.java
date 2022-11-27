@@ -56,49 +56,66 @@ public class TablaSimbolos{
     }
 
     public String existeSimboloAmbito(String lexema, String ambito){
-        // chequear que exista el id en el ambito 
-        String [] ambitos = ambito.split(":");
-        String [] lex = lexema.split(":");
-        
-        for (int i = ambitos.length; i > 0; i--){
-            //System.out.println("ambito comparado"+ var);
-            String ambitoNuevo=this.cambiarAmbito(ambitos, i);
-            if (tabla.containsKey(lex[0]+":"+ambitoNuevo)){
-                //System.out.println("variable por la que busco"+ lex[0]+":"+var);
-                return lex[0]+":"+ambitoNuevo;
+        // chequear que exista el id en el ambito
+        if((lexema!=null)&&(ambito!=null)){
+            String [] ambitos = ambito.split(":");
+            String [] lex = lexema.split(":");
+            
+            for (int i = ambitos.length; i > 0; i--){
+                //System.out.println("ambito comparado"+ var);
+                String ambitoNuevo=this.cambiarAmbito(ambitos, i);
+                if (tabla.containsKey(lex[0]+":"+ambitoNuevo)){
+                    //System.out.println("variable por la que busco"+ lex[0]+":"+var);
+                    return lex[0]+":"+ambitoNuevo;
+                }
             }
         }
         return null;
     }
 
     public Simbolo getSimbolo(String lexema){
-        return(tabla.get(lexema));
+        if(lexema!=null)
+            return(tabla.get(lexema));
+        return null;
     }
 
+    public String getUso(String lexema){
+        if((lexema!=null) && (tabla.containsKey(lexema)))
+            return(tabla.get(lexema).getUso());
+        return null;
+    }
+
+    public String getValor(String lexema){
+        if((lexema!=null) && (tabla.containsKey(lexema)))
+            return(tabla.get(lexema).getValor());
+        return null;
+    }
 
     public String getTipo(String lexema){
-        if(tabla.containsKey(lexema))
+        if((lexema!=null) && (tabla.containsKey(lexema)))
             return(tabla.get(lexema).getTipo());
         return null;
     }
 
     public void setTipo(String lexema, String tipo){
-
-        tabla.get(lexema).setTipo(tipo);
+        if(lexema!=null)
+            tabla.get(lexema).setTipo(tipo);
     }
 
     public void add(Simbolo e){  //agregar simbolo a la tabla
-        if(!tabla.containsKey(e.getLexema()))   //chequear que no exista otro id con el mismo nombre en el mismo ambito
-            this.tabla.put(e.getLexema(), e);
-        else
-            if (e.getToken() == 269) {
-                if (tabla.get(e.getLexema()).getUso().equals("identificador_funcion")) {
-                    System.out.println("Funcion " + e.getLexema() + " redeclarada");
-                    ErrorLinea err = new ErrorLinea("Funcion " + e.getLexema() + " redeclarada", this.linea.getNumeroLinea());
-                    erroresSemanticos.add(err);
-                } else {
-                    System.out.println("Error: variable " + e.getLexema() + " redeclarada");
-                    erroresSemanticos.add(new ErrorLinea("Error: variable " + e.getLexema() + " redeclarada", this.linea.getNumeroLinea()));
+        if(e!=null){
+            if(!tabla.containsKey(e.getLexema()))   //chequear que no exista otro id con el mismo nombre en el mismo ambito
+                this.tabla.put(e.getLexema(), e);
+            else
+                if (e.getToken() == 269) {
+                    if (tabla.get(e.getLexema()).getUso().equals("identificador_funcion")) {
+                        System.out.println("Funcion " + e.getLexema() + " redeclarada");
+                        ErrorLinea err = new ErrorLinea("Funcion " + e.getLexema() + " redeclarada", this.linea.getNumeroLinea());
+                        erroresSemanticos.add(err);
+                    } else {
+                        System.out.println("Error: variable " + e.getLexema() + " redeclarada");
+                        erroresSemanticos.add(new ErrorLinea("Error: variable " + e.getLexema() + " redeclarada", this.linea.getNumeroLinea()));
+                    }
                 }
             }
         }
@@ -138,6 +155,15 @@ public class TablaSimbolos{
         }
     }
     
+    public void setLexema(String signo, String cte){
+        if ((signo!=null) && (cte!=null) && (signo.equals("-"))){
+            Simbolo aux = tabla.get(cte);
+            Simbolo s = new Simbolo(aux.getLexema(), aux.getToken(), aux.getUso(), aux.getTipo(), aux.getValor());
+            s.setLexema(signo + cte);
+            s.setValor(signo + cte);
+            tabla.put(signo + cte, s);
+        }
+    }
     
 
 }

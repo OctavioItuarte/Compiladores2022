@@ -53,6 +53,11 @@ public class Simbolo {
     public String getLexema(){
         return this.lexema;
     }
+
+    public void setLexema(String nuevo){
+        this.lexema = nuevo;
+    }
+
     public int getToken(){
         return this.token;
     }

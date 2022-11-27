@@ -11,7 +11,7 @@ public abstract class AccionSemantica {
 		// TODO Auto-generated constructor stub
 	}
 
-	public abstract int Ejecutar(TablaSimbolos tabla, String lexema, String sim, int nuevaPosicion, NumeroLinea linea, List<ErrorLinea> error);
+	public abstract int ejecutar(String lexema, String sim);
   
   public int getPosicion(){
     return nuevaPosicion;

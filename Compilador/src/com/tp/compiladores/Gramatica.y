@@ -184,6 +184,7 @@ Asig: ID ASIGNACION Expresion ';'{String lex=tablaDeSimbolos.getRefSimbolo($1.sv
 									estructuraActual.crearTerceto($2.sval, lex, $3.sval + $4.sval);}
 
 	| ID error ';' {AgregarErrorSintactico("Se espera '=:'");}
+	;
 
 HeaderWhen: When Condicion THEN {chequearCondicionWhen();
 								}
@@ -202,7 +203,9 @@ When: WHEN {dentroDeWhen=true;
 			}
 
 WhenCuerpo: HeaderWhen '{' ListSentencias '}' {estructuraActual.completarTercetoIf(1);
-												estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+												estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+												
+					 							cantLabel++;
 												dentroDeWhen=false; condicionWhenFalse=false;
 												}
 			 | error '}' {AgregarErrorSintactico("Se espera ';'");}
@@ -385,8 +388,7 @@ Expresion: ID signo ID {
 									
 								}
 								estructuraActual.crearTerceto("BI", funcion, null);
-								estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
-
+								tipoActual=tablaDeSimbolos.getTipo(funcion);
 								$$.sval=funcion;
 								valores.add(funcion);
 								parametrosReales.clear();
@@ -440,7 +442,10 @@ CuerpoIf: SentenciaEjecutable
 Else: ELSE {estructuraActual.completarTercetoIf(2);
 			estructuraActual.crearTerceto("BI", null, null);
 			estructuraActual.addTercetoIf();
-			estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);}
+			estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+			
+					 cantLabel++;
+			}
 	;
 
 CuerpoElse: Else CuerpoIf END_IF 
@@ -448,9 +453,15 @@ CuerpoElse: Else CuerpoIf END_IF
           ;
 
 Seleccion: HeaderIf CuerpoIf END_IF {estructuraActual.completarTercetoIf(1);
-									 estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);}
+									 estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+									 
+					 				cantLabel++;
+									 }
          | HeaderIf CuerpoIf CuerpoElse {estructuraActual.completarTercetoIf(1);
-								  		 estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);}
+								  		 estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+										 
+					 					cantLabel++;
+										 }
 
          | HeaderIf CuerpoIf error {yyerror("falta palabra reservada end_if");}
 		 | error ELSE {AgregarErrorSintactico("Se espera '{' '}' ");}
@@ -649,7 +660,9 @@ AsigFor: ID ASIGNACION CTE_ENTERA
 			errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 		estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));
 		estructuraActual.crearTerceto($2.sval, estructuraActual.getIdFor(), $3.sval);
-		estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+		estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+		
+					 cantLabel++;
 		estructuraActual.addNumCondicionFor();
 		$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 	 	}
@@ -658,7 +671,9 @@ AsigFor: ID ASIGNACION CTE_ENTERA
 			errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 		estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));
 		estructuraActual.crearTerceto($2.sval, estructuraActual.getIdFor(), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));
-		estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+		estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+		
+		cantLabel++;
 		estructuraActual.addNumCondicionFor();
 		$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 	 	}
@@ -668,7 +683,9 @@ CuerpoFor: '{' ListSentenciasFor '}'
 					{estructuraActual.crearTerceto("BI", "[" + estructuraActual.getNumeroTercetoCondicionFor() + "]", null);
 					 estructuraActual.completarTercetoFor(1);
 					 estructuraActual.completarTercetosBreak(1);
-					 estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+					 estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+					 
+					 cantLabel++;
 					 estructuraActual.popIdFor();
 
 					 estructuraActual.borrarListTercetosBreak();
@@ -684,8 +701,9 @@ SentenciaControl: HeaderFor CuerpoFor
 				| HeaderForID CuerpoFor ELSE cte ';' {
 					estructuraActual.crearTerceto("=:", estructuraActual.getIdAsigFor(), $4.sval);
 					estructuraActual.completarTercetosBreakCte(1);
-					estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(),null,null);
-
+					estructuraActual.crearTerceto("LABEL"+cantLabel,null,null);
+					
+					cantLabel++;
 					estructuraActual.borrarListTercetosBreakCte();
 					esperandoBreakcte=!estructuraActual.vaciaListTercetoBreakCte();
 
@@ -695,8 +713,9 @@ SentenciaControl: HeaderFor CuerpoFor
 				| HeaderForID CuerpoFor ELSE signo cte ';' {
 					estructuraActual.crearTerceto("=:", estructuraActual.getIdAsigFor(), $4.sval + $5.sval);
 					estructuraActual.completarTercetosBreakCte(1);
-					estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(),null,null);
-
+					estructuraActual.crearTerceto("LABEL"+cantLabel,null,null);
+					
+					cantLabel++;
 					estructuraActual.borrarListTercetosBreakCte();
 					esperandoBreakcte=!estructuraActual.vaciaListTercetoBreakCte();
 
@@ -848,7 +867,7 @@ public static String refEtiqueta = null;
 public static String tipoActual = "";
 public static String tipoAnterior = "";
 
-//private String tipo; //guarda el tipo de la lista de id que se estan declarando
+public static int cantLabel= 0;
 
 public static String ambito = "";
 
@@ -912,7 +931,7 @@ public static AnalizadorLexico lexico;
 
 			if((errores_lexicos.isEmpty()) && (errores_sintacticos.isEmpty()) && (errores_semanticos.isEmpty())){
 				GeneradorCodigo.setListaEstructuras(listEstructurasTercetos);
-				GeneradorCodigo.generarCodigo();
+				GeneradorCodigo.generarCodigoPrincipal();
 			}
         }
         catch (IOException e) {
@@ -977,7 +996,7 @@ public static AnalizadorLexico lexico;
 		String lex2 = tablaDeSimbolos.getRefSimbolo(val2, ambito);
 		String tipo1 = tablaDeSimbolos.getTipo(lex1);
 		String tipo2 = tablaDeSimbolos.getTipo(lex2);
-		if (tipo1 == tipo2){
+		if (tipo1.equals(tipo2)){
 			tipoAnterior = tipoActual;
 			tipoActual = tipo1;
 			return true;
@@ -1005,7 +1024,7 @@ public static AnalizadorLexico lexico;
 	public static boolean mismoTipoIDCte(String val1, String val2){
 		String lex1 = tablaDeSimbolos.getRefSimbolo(val1, ambito);
 		String tipo = tablaDeSimbolos.getTipo(val2);
-		if (tablaDeSimbolos.getTipo(lex1) == tipo){
+		if (tablaDeSimbolos.getTipo(lex1).equals(tipo)){
 			tipoAnterior = tipoActual;
 			tipoActual = tipo;
 			return true;
@@ -1018,7 +1037,7 @@ public static AnalizadorLexico lexico;
 
 	public static boolean mismoTipoExpCte(String val){
 		String tipo = tablaDeSimbolos.getTipo(val);
-		if (tipoActual == tipo){
+		if (tipoActual.equals(tipo)){
 			return true;
 		}
 		else {
@@ -1030,7 +1049,7 @@ public static AnalizadorLexico lexico;
 	public static boolean mismoTipoExpID(String val){
 		String lex = tablaDeSimbolos.getRefSimbolo(val, ambito);
         String tipo = tablaDeSimbolos.getTipo(lex);
-		if (tipoActual == tipo){
+		if (tipoActual.equals(tipo)){
 			return true;
 		}
 		else {
@@ -1040,7 +1059,7 @@ public static AnalizadorLexico lexico;
 	}
 
 	public static boolean mismoTipo(){
-		if (tipoActual == tipoAnterior){
+		if (tipoActual.equals(tipoAnterior)){
 			return true;
 		}
 		else {
@@ -1208,4 +1227,3 @@ public static AnalizadorLexico lexico;
 		
 	}
 
-	

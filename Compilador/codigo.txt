@@ -1,8 +1,10 @@
 ee{
     i8 d , q , i , c,t,n;
     i8 num;
+    num=:0; d=:0; q=:0; i=:0; c=:0; t=:0; n=:0;
     fun awf(i8 num): f32{
         num=:0;
+        f32 q;
         return(q);
     }
     
@@ -36,7 +38,7 @@ ee{
                 break -2;
                 d=:d;
             }
-            continue:aaa;
+            
             <<else 1;
         }
         if(t < 3) then{
@@ -45,16 +47,16 @@ ee{
         }
         else{
             if(t>2)then
-                i=:5.0;
+                i=:5;
             end_if
             break;
             }
         end_if
-        continue:bbb;
+        
     }
     else 1;
-    i8 w;
-    w=:tof32(q+5);
+    f32 w;
+    <<w=:tof32(q+5);
     w=:aa(i);
     
 }

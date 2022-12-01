@@ -33,7 +33,10 @@ public class EstructuraTercetos {
 
     private List<Terceto> tercetosWhen = new ArrayList<>();
     //public List<ErrorLinea> errores_semanticos;
-    
+
+    private HashMap<Integer, Integer> labels= new HashMap<>(); 
+    //clave: numero de label, valor:numero de terceto dentro de la estructura
+ 
     public EstructuraTercetos(String nombre) {
         this.nombre=nombre;
         //this.errores_semanticos=errores_semanticos;

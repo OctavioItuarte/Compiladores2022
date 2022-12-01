@@ -6,10 +6,20 @@ public class Terceto {
     private String valor2;
     private String valor3;
 
+    private String registro;
+
     public Terceto(String valor1, String valor2, String valor3) {
         this.valor1 = valor1;
         this.valor2 = valor2;
         this.valor3 = valor3;
+    }
+
+    public String getRegistro(){
+        return this.registro;
+    }
+
+    public void setRegistro(String registro){
+        this.registro=registro;
     }
 
     public String getValor1() {
@@ -33,6 +43,19 @@ public class Terceto {
     public void setValor3(String valor3){
         this.valor3=valor3;
     }
+
+    public boolean valor2EsRef(){
+        if (this.valor2.startsWith("["))
+            return true;
+        else return false;
+    }
+
+    public boolean valor3EsRef(){
+        if (this.valor3.startsWith("["))
+            return true;
+        else return false;
+    }
+
     public void imprimir(){
         System.out.println("("+valor1+","+valor2+","+valor3+")");
     }

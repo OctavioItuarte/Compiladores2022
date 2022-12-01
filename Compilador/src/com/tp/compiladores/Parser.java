@@ -741,7 +741,7 @@ final static String yyrule[] = {
 "SentenciaCorte : CONTINUE ':' ID ';'",
 };
 
-//#line 816 "Gramatica.y"
+//#line 835 "Gramatica.y"
 
 public static String input;
 public static final List<ErrorLinea> errores_sintacticos = new ArrayList<>();
@@ -777,7 +777,7 @@ public static String refEtiqueta = null;
 public static String tipoActual = "";
 public static String tipoAnterior = "";
 
-//private String tipo; //guarda el tipo de la lista de id que se estan declarando
+public static int cantLabel= 0;
 
 public static String ambito = "";
 
@@ -841,7 +841,7 @@ public static AnalizadorLexico lexico;
 
 			if((errores_lexicos.isEmpty()) && (errores_sintacticos.isEmpty()) && (errores_semanticos.isEmpty())){
 				GeneradorCodigo.setListaEstructuras(listEstructurasTercetos);
-				GeneradorCodigo.generarCodigo();
+				GeneradorCodigo.generarCodigoPrincipal();
 			}
         }
         catch (IOException e) {
@@ -906,7 +906,7 @@ public static AnalizadorLexico lexico;
 		String lex2 = tablaDeSimbolos.getRefSimbolo(val2, ambito);
 		String tipo1 = tablaDeSimbolos.getTipo(lex1);
 		String tipo2 = tablaDeSimbolos.getTipo(lex2);
-		if (tipo1 == tipo2){
+		if (tipo1.equals(tipo2)){
 			tipoAnterior = tipoActual;
 			tipoActual = tipo1;
 			return true;
@@ -934,7 +934,7 @@ public static AnalizadorLexico lexico;
 	public static boolean mismoTipoIDCte(String val1, String val2){
 		String lex1 = tablaDeSimbolos.getRefSimbolo(val1, ambito);
 		String tipo = tablaDeSimbolos.getTipo(val2);
-		if (tablaDeSimbolos.getTipo(lex1) == tipo){
+		if (tablaDeSimbolos.getTipo(lex1).equals(tipo)){
 			tipoAnterior = tipoActual;
 			tipoActual = tipo;
 			return true;
@@ -947,7 +947,7 @@ public static AnalizadorLexico lexico;
 
 	public static boolean mismoTipoExpCte(String val){
 		String tipo = tablaDeSimbolos.getTipo(val);
-		if (tipoActual == tipo){
+		if (tipoActual.equals(tipo)){
 			return true;
 		}
 		else {
@@ -959,7 +959,7 @@ public static AnalizadorLexico lexico;
 	public static boolean mismoTipoExpID(String val){
 		String lex = tablaDeSimbolos.getRefSimbolo(val, ambito);
         String tipo = tablaDeSimbolos.getTipo(lex);
-		if (tipoActual == tipo){
+		if (tipoActual.equals(tipo)){
 			return true;
 		}
 		else {
@@ -969,7 +969,7 @@ public static AnalizadorLexico lexico;
 	}
 
 	public static boolean mismoTipo(){
-		if (tipoActual == tipoAnterior){
+		if (tipoActual.equals(tipoAnterior)){
 			return true;
 		}
 		else {
@@ -1137,8 +1137,7 @@ public static AnalizadorLexico lexico;
 		
 	}
 
-	
-//#line 1070 "Parser.java"
+//#line 1069 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -1516,20 +1515,20 @@ case 59:
 {AgregarErrorSintactico("Se espera '=:'");}
 break;
 case 60:
-//#line 188 "Gramatica.y"
+//#line 189 "Gramatica.y"
 {chequearCondicionWhen();
 								}
 break;
 case 61:
-//#line 191 "Gramatica.y"
+//#line 192 "Gramatica.y"
 {AgregarErrorSintactico("Se espera un if o un when");}
 break;
 case 62:
-//#line 192 "Gramatica.y"
+//#line 193 "Gramatica.y"
 {AgregarErrorSintactico("Se espera la palabra reservada then");}
 break;
 case 63:
-//#line 195 "Gramatica.y"
+//#line 196 "Gramatica.y"
 {dentroDeWhen=true;
 			valores1.clear();
 			valores2.clear();
@@ -1540,26 +1539,28 @@ case 63:
 			}
 break;
 case 64:
-//#line 204 "Gramatica.y"
+//#line 205 "Gramatica.y"
 {estructuraActual.completarTercetoIf(1);
-												estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+												estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+												
+					 							cantLabel++;
 												dentroDeWhen=false; condicionWhenFalse=false;
 												}
 break;
 case 65:
-//#line 208 "Gramatica.y"
+//#line 211 "Gramatica.y"
 {AgregarErrorSintactico("Se espera ';'");}
 break;
 case 66:
-//#line 212 "Gramatica.y"
+//#line 215 "Gramatica.y"
 {estructuraActual.crearTerceto("OUT", val_peek(1).sval, null);}
 break;
 case 67:
-//#line 213 "Gramatica.y"
+//#line 216 "Gramatica.y"
 {AgregarErrorSintactico("Se espera un out");}
 break;
 case 68:
-//#line 217 "Gramatica.y"
+//#line 220 "Gramatica.y"
 {
 					if (!mismoTipoIds(val_peek(2).sval, val_peek(0).sval)) 
 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
@@ -1575,7 +1576,7 @@ case 68:
 					}
 break;
 case 69:
-//#line 231 "Gramatica.y"
+//#line 234 "Gramatica.y"
 {
 			if (!mismoTipoIDCte(val_peek(2).sval, val_peek(0).sval)) 
 		 		errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
@@ -1590,7 +1591,7 @@ case 69:
 			}
 break;
 case 70:
-//#line 244 "Gramatica.y"
+//#line 247 "Gramatica.y"
 {
 			if (!mismoTipoExpID(val_peek(0).sval))
 				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
@@ -1604,7 +1605,7 @@ case 70:
 			}
 break;
 case 71:
-//#line 256 "Gramatica.y"
+//#line 259 "Gramatica.y"
 {
 			if (!mismoTipoExpCte(val_peek(0).sval)) 
 				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
@@ -1616,7 +1617,7 @@ case 71:
 			}
 break;
 case 72:
-//#line 265 "Gramatica.y"
+//#line 268 "Gramatica.y"
 {if (!mismoTipoIds(val_peek(2).sval, val_peek(0).sval))
 						 errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 					String lex1 =tablaDeSimbolos.getRefSimbolo(val_peek(2).sval, ambito);
@@ -1631,7 +1632,7 @@ case 72:
 					}
 break;
 case 73:
-//#line 278 "Gramatica.y"
+//#line 281 "Gramatica.y"
 {if (!mismoTipoIds(val_peek(2).sval, val_peek(0).sval)) 
 		 				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 					String lex1 =tablaDeSimbolos.getRefSimbolo(val_peek(2).sval, ambito);
@@ -1646,7 +1647,7 @@ case 73:
 					}
 break;
 case 74:
-//#line 290 "Gramatica.y"
+//#line 293 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(2).sval, val_peek(0).sval)) 
 		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 							String lex= tablaDeSimbolos.getRefSimbolo(val_peek(2).sval, ambito);
@@ -1659,7 +1660,7 @@ case 74:
 							}
 break;
 case 75:
-//#line 300 "Gramatica.y"
+//#line 303 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(2).sval, val_peek(0).sval)) 
 		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 						String lex= tablaDeSimbolos.getRefSimbolo(val_peek(2).sval, ambito);
@@ -1672,7 +1673,7 @@ case 75:
 						}
 break;
 case 76:
-//#line 311 "Gramatica.y"
+//#line 314 "Gramatica.y"
 {if (!mismoTipoExpID(val_peek(0).sval)) 
 		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 							String lex=tablaDeSimbolos.getRefSimbolo(val_peek(0).sval, ambito);
@@ -1684,7 +1685,7 @@ case 76:
 							}
 break;
 case 77:
-//#line 321 "Gramatica.y"
+//#line 324 "Gramatica.y"
 {if (!mismoTipoExpID(val_peek(0).sval)) 
 		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 							String lex= tablaDeSimbolos.getRefSimbolo(val_peek(0).sval, ambito);
@@ -1696,7 +1697,7 @@ case 77:
 							}
 break;
 case 78:
-//#line 331 "Gramatica.y"
+//#line 334 "Gramatica.y"
 {if (!mismoTipoExpCte(val_peek(0).sval)) 
 		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 							estructuraActual.crearTerceto(val_peek(1).sval, val_peek(2).sval, val_peek(0).sval);
@@ -1707,7 +1708,7 @@ case 78:
 							}
 break;
 case 79:
-//#line 339 "Gramatica.y"
+//#line 342 "Gramatica.y"
 {if (!mismoTipoExpCte(val_peek(0).sval)) 
 		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 							estructuraActual.crearTerceto(val_peek(1).sval, val_peek(2).sval, val_peek(0).sval);
@@ -1718,7 +1719,7 @@ case 79:
 							}
 break;
 case 81:
-//#line 350 "Gramatica.y"
+//#line 353 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(0).sval, val_peek(2).sval)) 
 		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 						String lex=tablaDeSimbolos.getRefSimbolo(val_peek(0).sval, ambito);
@@ -1731,7 +1732,7 @@ case 81:
 						}
 break;
 case 82:
-//#line 361 "Gramatica.y"
+//#line 364 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(0).sval, val_peek(2).sval)) 
 		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 						String lex=tablaDeSimbolos.getRefSimbolo(val_peek(0).sval, ambito);
@@ -1744,7 +1745,7 @@ case 82:
 						}
 break;
 case 83:
-//#line 371 "Gramatica.y"
+//#line 374 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(0).sval, val_peek(2).sval)) 
 		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 						String lex=tablaDeSimbolos.getRefSimbolo(val_peek(0).sval, ambito);
@@ -1757,34 +1758,33 @@ case 83:
 						}
 break;
 case 84:
-//#line 382 "Gramatica.y"
+//#line 385 "Gramatica.y"
 {String funcion=tablaDeSimbolos.getRefFuncion(val_peek(1).sval, ambito);
 								if(funcion!=null){
 		 						 	chequearYAsignarParametros(parametrosReales, parametrosFormales.get(funcion));
 									
 								}
 								estructuraActual.crearTerceto("BI", funcion, null);
-								estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
-
+								tipoActual=tablaDeSimbolos.getTipo(funcion);
 								yyval.sval=funcion;
 								valores.add(funcion);
 								parametrosReales.clear();
 								}
 break;
 case 88:
-//#line 401 "Gramatica.y"
+//#line 403 "Gramatica.y"
 {parametrosReales.add(val_peek(0).sval);}
 break;
 case 89:
-//#line 402 "Gramatica.y"
+//#line 404 "Gramatica.y"
 {parametrosReales.add(val_peek(1).sval+val_peek(0).sval);}
 break;
 case 90:
-//#line 403 "Gramatica.y"
+//#line 405 "Gramatica.y"
 {parametrosReales.add(tablaDeSimbolos.getRefSimbolo(val_peek(0).sval, ambito));}
 break;
 case 91:
-//#line 406 "Gramatica.y"
+//#line 408 "Gramatica.y"
 {if (conversionValida()){
 												estructuraActual.crearTerceto("tof32", val_peek(1).sval, null);
 											  }
@@ -1793,91 +1793,100 @@ case 91:
 											  }
 break;
 case 92:
-//#line 412 "Gramatica.y"
+//#line 414 "Gramatica.y"
 {AgregarErrorSintactico("Se espera expresion");}
 break;
 case 96:
-//#line 421 "Gramatica.y"
+//#line 423 "Gramatica.y"
 {chequearRangoEntero(val_peek(0).sval);}
 break;
 case 102:
-//#line 431 "Gramatica.y"
+//#line 433 "Gramatica.y"
 {yyerror("falta cerrar parentesis");}
 break;
 case 106:
-//#line 440 "Gramatica.y"
+//#line 442 "Gramatica.y"
 {estructuraActual.completarTercetoIf(2);
 			estructuraActual.crearTerceto("BI", null, null);
 			estructuraActual.addTercetoIf();
-			estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);}
+			estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+			
+					 cantLabel++;
+			}
 break;
 case 108:
-//#line 447 "Gramatica.y"
+//#line 452 "Gramatica.y"
 {yyerror("falta palabra reservada end_if");}
 break;
 case 109:
-//#line 450 "Gramatica.y"
+//#line 455 "Gramatica.y"
 {estructuraActual.completarTercetoIf(1);
-									 estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);}
+									 estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+									 
+					 				cantLabel++;
+									 }
 break;
 case 110:
-//#line 452 "Gramatica.y"
+//#line 460 "Gramatica.y"
 {estructuraActual.completarTercetoIf(1);
-								  		 estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);}
+								  		 estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+										 
+					 					cantLabel++;
+										 }
 break;
 case 111:
-//#line 455 "Gramatica.y"
+//#line 466 "Gramatica.y"
 {yyerror("falta palabra reservada end_if");}
 break;
 case 112:
-//#line 456 "Gramatica.y"
+//#line 467 "Gramatica.y"
 {AgregarErrorSintactico("Se espera '{' '}' ");}
 break;
 case 113:
-//#line 457 "Gramatica.y"
+//#line 468 "Gramatica.y"
 {AgregarErrorSintactico("Se espera '{' '}' ");}
 break;
 case 114:
-//#line 460 "Gramatica.y"
+//#line 471 "Gramatica.y"
 {estructuraActual.crearTerceto("BF", val_peek(1).sval, null);
 								estructuraActual.addTercetoIf();
 								estructuraActual.addTercetoWhen();
 								}
 break;
 case 115:
-//#line 464 "Gramatica.y"
+//#line 475 "Gramatica.y"
 {AgregarErrorSintactico("Falta cerrar parentesis");}
 break;
 case 116:
-//#line 465 "Gramatica.y"
+//#line 476 "Gramatica.y"
 {AgregarErrorSintactico("Falta abrir parentesis");}
 break;
 case 117:
-//#line 468 "Gramatica.y"
+//#line 479 "Gramatica.y"
 {listOperadores=listOperadores2; comparador=val_peek(0).sval; valores=valores2;}
 break;
 case 118:
-//#line 469 "Gramatica.y"
+//#line 480 "Gramatica.y"
 {listOperadores=listOperadores2; comparador=val_peek(0).sval; valores=valores2;}
 break;
 case 119:
-//#line 470 "Gramatica.y"
+//#line 481 "Gramatica.y"
 {listOperadores=listOperadores2; comparador=val_peek(0).sval;valores=valores2;}
 break;
 case 120:
-//#line 471 "Gramatica.y"
+//#line 482 "Gramatica.y"
 {listOperadores=listOperadores2; comparador=val_peek(0).sval;valores=valores2;}
 break;
 case 121:
-//#line 472 "Gramatica.y"
+//#line 483 "Gramatica.y"
 {listOperadores=listOperadores2; comparador=val_peek(0).sval;valores=valores2;}
 break;
 case 122:
-//#line 473 "Gramatica.y"
+//#line 484 "Gramatica.y"
 {listOperadores=listOperadores2; comparador=val_peek(0).sval;valores=valores2;}
 break;
 case 123:
-//#line 476 "Gramatica.y"
+//#line 487 "Gramatica.y"
 {if (!mismoTipo()) 
 												errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 											
@@ -1888,7 +1897,7 @@ case 123:
 											}
 break;
 case 124:
-//#line 484 "Gramatica.y"
+//#line 495 "Gramatica.y"
 {if (!mismoTipoExpCte(val_peek(0).sval)) 
 		   									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 										
@@ -1900,7 +1909,7 @@ case 124:
 										}
 break;
 case 125:
-//#line 493 "Gramatica.y"
+//#line 504 "Gramatica.y"
 {if (!mismoTipoExpCte(val_peek(0).sval)) 
 		   										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 											
@@ -1913,7 +1922,7 @@ case 125:
 											}
 break;
 case 126:
-//#line 503 "Gramatica.y"
+//#line 514 "Gramatica.y"
 {if (!mismoTipoExpCte(val_peek(2).sval)) 
 		   									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 		   								
@@ -1924,7 +1933,7 @@ case 126:
 										}
 break;
 case 127:
-//#line 511 "Gramatica.y"
+//#line 522 "Gramatica.y"
 {if (!mismoTipoExpCte(val_peek(2).sval)) 
 		   										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 											
@@ -1936,7 +1945,7 @@ case 127:
 											}
 break;
 case 128:
-//#line 520 "Gramatica.y"
+//#line 531 "Gramatica.y"
 {if (!mismoTipoExpID(val_peek(0).sval)) 
 		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 		   								String lex=tablaDeSimbolos.getRefSimbolo(val_peek(0).sval, ambito);
@@ -1947,7 +1956,7 @@ case 128:
 									}
 break;
 case 129:
-//#line 528 "Gramatica.y"
+//#line 539 "Gramatica.y"
 {if (!mismoTipoExpID(val_peek(2).sval)) 
 		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 
@@ -1959,7 +1968,7 @@ case 129:
 									}
 break;
 case 130:
-//#line 537 "Gramatica.y"
+//#line 548 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(0).sval, val_peek(2).sval)) 
 		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 
@@ -1972,7 +1981,7 @@ case 130:
 								}
 break;
 case 131:
-//#line 547 "Gramatica.y"
+//#line 558 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(0).sval, val_peek(2).sval)) 
 		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 		   							
@@ -1986,7 +1995,7 @@ case 131:
 									}
 break;
 case 132:
-//#line 558 "Gramatica.y"
+//#line 569 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(2).sval, val_peek(0).sval)) 
 		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 
@@ -1999,7 +2008,7 @@ case 132:
 								}
 break;
 case 133:
-//#line 568 "Gramatica.y"
+//#line 579 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(3).sval, val_peek(0).sval)) 
 		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 		   							
@@ -2013,7 +2022,7 @@ case 133:
 									}
 break;
 case 134:
-//#line 579 "Gramatica.y"
+//#line 590 "Gramatica.y"
 {if (!mismoTipoIds(val_peek(2).sval, val_peek(0).sval)) 
 		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 		   						
@@ -2028,7 +2037,7 @@ case 134:
 								}
 break;
 case 135:
-//#line 591 "Gramatica.y"
+//#line 602 "Gramatica.y"
 {if (!mismoTipoCtes(val_peek(2).sval, val_peek(0).sval)) 
 		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 		   							estructuraActual.crearTerceto(val_peek(1).sval, val_peek(2).sval, val_peek(0).sval);
@@ -2039,19 +2048,19 @@ case 135:
 								}
 break;
 case 136:
-//#line 599 "Gramatica.y"
+//#line 610 "Gramatica.y"
 {yyerror("falta expresion en la comparacion");}
 break;
 case 137:
-//#line 600 "Gramatica.y"
+//#line 611 "Gramatica.y"
 {yyerror("falta comparador");}
 break;
 case 138:
-//#line 601 "Gramatica.y"
+//#line 612 "Gramatica.y"
 {yyerror("falta comparador");}
 break;
 case 145:
-//#line 615 "Gramatica.y"
+//#line 626 "Gramatica.y"
 {estructuraActual.crearTerceto("BF", val_peek(4).sval, null);
 				 refEtiqueta = val_peek(6).sval;
 				 estructuraActual.addTercetoFor();
@@ -2062,7 +2071,7 @@ case 145:
 				 }
 break;
 case 146:
-//#line 624 "Gramatica.y"
+//#line 635 "Gramatica.y"
 {estructuraActual.addNumCondicionFor();
 				 estructuraActual.crearTerceto("BF", val_peek(3).sval, null);
 				 refEtiqueta = val_peek(5).sval;
@@ -2074,48 +2083,54 @@ case 146:
 				 }
 break;
 case 147:
-//#line 635 "Gramatica.y"
+//#line 646 "Gramatica.y"
 {estructuraActual.crearListTercetoBreakCte();
 										esperandoBreakcte=true;
 										estructuraActual.addIdAsigFor(tablaDeSimbolos.getRefSimbolo(val_peek(2).sval,ambito));
 										}
 break;
 case 148:
-//#line 641 "Gramatica.y"
+//#line 652 "Gramatica.y"
 {estructuraActual.addEtiquetaFor(val_peek(1).sval);}
 break;
 case 149:
-//#line 644 "Gramatica.y"
+//#line 655 "Gramatica.y"
 {estructuraActual.addRefEtiqueta(refEtiqueta);}
 break;
 case 150:
-//#line 648 "Gramatica.y"
+//#line 659 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(2).sval, val_peek(0).sval)) 
 			errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 		estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo(val_peek(2).sval, ambito));
 		estructuraActual.crearTerceto(val_peek(1).sval, estructuraActual.getIdFor(), val_peek(0).sval);
-		estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+		estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+		
+					 cantLabel++;
 		estructuraActual.addNumCondicionFor();
 		yyval.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 	 	}
 break;
 case 151:
-//#line 657 "Gramatica.y"
+//#line 670 "Gramatica.y"
 {if (!mismoTipoIds(val_peek(2).sval, val_peek(0).sval)) 
 			errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 		estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo(val_peek(2).sval, ambito));
 		estructuraActual.crearTerceto(val_peek(1).sval, estructuraActual.getIdFor(), tablaDeSimbolos.getRefSimbolo(val_peek(0).sval, ambito));
-		estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+		estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+		
+		cantLabel++;
 		estructuraActual.addNumCondicionFor();
 		yyval.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 	 	}
 break;
 case 152:
-//#line 668 "Gramatica.y"
+//#line 683 "Gramatica.y"
 {estructuraActual.crearTerceto("BI", "[" + estructuraActual.getNumeroTercetoCondicionFor() + "]", null);
 					 estructuraActual.completarTercetoFor(1);
 					 estructuraActual.completarTercetosBreak(1);
-					 estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(), null, null);
+					 estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
+					 
+					 cantLabel++;
 					 estructuraActual.popIdFor();
 
 					 estructuraActual.borrarListTercetosBreak();
@@ -2123,20 +2138,21 @@ case 152:
 					 }
 break;
 case 153:
-//#line 678 "Gramatica.y"
+//#line 695 "Gramatica.y"
 {AgregarErrorSintactico("Se esperan sentencias ejecutables");}
 break;
 case 155:
-//#line 683 "Gramatica.y"
+//#line 700 "Gramatica.y"
 {estructuraActual.eliminarEtiqueta();}
 break;
 case 156:
-//#line 684 "Gramatica.y"
+//#line 701 "Gramatica.y"
 {
 					estructuraActual.crearTerceto("=:", estructuraActual.getIdAsigFor(), val_peek(1).sval);
 					estructuraActual.completarTercetosBreakCte(1);
-					estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(),null,null);
-
+					estructuraActual.crearTerceto("LABEL"+cantLabel,null,null);
+					
+					cantLabel++;
 					estructuraActual.borrarListTercetosBreakCte();
 					esperandoBreakcte=!estructuraActual.vaciaListTercetoBreakCte();
 
@@ -2144,12 +2160,13 @@ case 156:
 					}
 break;
 case 157:
-//#line 695 "Gramatica.y"
+//#line 713 "Gramatica.y"
 {
 					estructuraActual.crearTerceto("=:", estructuraActual.getIdAsigFor(), val_peek(2).sval + val_peek(1).sval);
 					estructuraActual.completarTercetosBreakCte(1);
-					estructuraActual.crearTerceto("LABEL"+estructuraActual.cantTercetos(),null,null);
-
+					estructuraActual.crearTerceto("LABEL"+cantLabel,null,null);
+					
+					cantLabel++;
 					estructuraActual.borrarListTercetosBreakCte();
 					esperandoBreakcte=!estructuraActual.vaciaListTercetoBreakCte();
 
@@ -2158,7 +2175,7 @@ case 157:
 				}
 break;
 case 158:
-//#line 709 "Gramatica.y"
+//#line 728 "Gramatica.y"
 {if (!mismoTipoIds(val_peek(2).sval, val_peek(0).sval)) 
 									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 								estructuraActual.crearTerceto(val_peek(1).sval, tablaDeSimbolos.getRefSimbolo(val_peek(2).sval, ambito), tablaDeSimbolos.getRefSimbolo(val_peek(0).sval, ambito));
@@ -2166,7 +2183,7 @@ case 158:
 								}
 break;
 case 159:
-//#line 715 "Gramatica.y"
+//#line 734 "Gramatica.y"
 {if (!mismoTipoExpID(val_peek(2).sval)) 
 											errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 									   estructuraActual.crearTerceto(val_peek(1).sval, tablaDeSimbolos.getRefSimbolo(val_peek(2).sval, ambito), val_peek(0).sval);
@@ -2174,7 +2191,7 @@ case 159:
 									   }
 break;
 case 160:
-//#line 721 "Gramatica.y"
+//#line 740 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(2).sval, val_peek(0).sval)) 
 											errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 										estructuraActual.crearTerceto(val_peek(1).sval, tablaDeSimbolos.getRefSimbolo(val_peek(2).sval, ambito), val_peek(0).sval);
@@ -2182,7 +2199,7 @@ case 160:
 										}
 break;
 case 161:
-//#line 727 "Gramatica.y"
+//#line 746 "Gramatica.y"
 {if (!mismoTipoIDCte(val_peek(3).sval, val_peek(1).sval)) 
 												errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
 											  tablaDeSimbolos.setLexema(val_peek(1).sval, val_peek(0).sval);
@@ -2191,7 +2208,7 @@ case 161:
 											  }
 break;
 case 162:
-//#line 735 "Gramatica.y"
+//#line 754 "Gramatica.y"
 {
 					if(!dentroDeFun){
 						errores_semanticos.add(new ErrorLinea("No se encuentra dentro de una funcion", this.linea.getNumeroLinea()));
@@ -2205,7 +2222,7 @@ case 162:
 				}
 break;
 case 163:
-//#line 746 "Gramatica.y"
+//#line 765 "Gramatica.y"
 {
 					if(!dentroDeFun){
 						errores_semanticos.add(new ErrorLinea("No existe ID para la asignacion", this.linea.getNumeroLinea()));
@@ -2218,7 +2235,7 @@ case 163:
 				}
 break;
 case 164:
-//#line 756 "Gramatica.y"
+//#line 775 "Gramatica.y"
 {
 					if(!dentroDeFun){
 						errores_semanticos.add(new ErrorLinea("No existe ID para la asignacion", this.linea.getNumeroLinea()));
@@ -2231,23 +2248,23 @@ case 164:
 				}
 break;
 case 165:
-//#line 766 "Gramatica.y"
+//#line 785 "Gramatica.y"
 {AgregarErrorSintactico("Falta ;");}
 break;
 case 166:
-//#line 767 "Gramatica.y"
+//#line 786 "Gramatica.y"
 {AgregarErrorSintactico("Falta ;");}
 break;
 case 167:
-//#line 768 "Gramatica.y"
+//#line 787 "Gramatica.y"
 {AgregarErrorSintactico("Falta ;");}
 break;
 case 168:
-//#line 769 "Gramatica.y"
+//#line 788 "Gramatica.y"
 {AgregarErrorSintactico("Falta expresion de retorno");}
 break;
 case 170:
-//#line 773 "Gramatica.y"
+//#line 792 "Gramatica.y"
 {
 				if(dentroDeFor){
 					estructuraActual.crearTerceto("BI", null, null);
@@ -2260,7 +2277,7 @@ case 170:
 			  }
 break;
 case 171:
-//#line 783 "Gramatica.y"
+//#line 802 "Gramatica.y"
 {
 				if((dentroDeFor) && (esperandoBreakcte)){
 					estructuraActual.crearTerceto("=:", estructuraActual.getIdAsigFor(), val_peek(1).sval);
@@ -2274,7 +2291,7 @@ case 171:
 				}
 break;
 case 172:
-//#line 794 "Gramatica.y"
+//#line 813 "Gramatica.y"
 {
 				if((dentroDeFor) && (esperandoBreakcte)){
 					estructuraActual.crearTerceto("=:", estructuraActual.getIdAsigFor(), val_peek(2).sval + val_peek(1).sval);
@@ -2288,7 +2305,7 @@ case 172:
 			  }
 break;
 case 173:
-//#line 805 "Gramatica.y"
+//#line 824 "Gramatica.y"
 {
 				if (estructuraActual.existeEtiquetaFor(val_peek(1).sval)){
 					estructuraActual.crearTerceto("BI", estructuraActual.getRefEtiqueta(val_peek(1).sval), null);
@@ -2297,7 +2314,7 @@ case 173:
 					errores_semanticos.add(new ErrorLinea("No existe la etiqueta de salto", linea.getNumeroLinea()));
 			  }
 break;
-//#line 2224 "Parser.java"
+//#line 2241 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

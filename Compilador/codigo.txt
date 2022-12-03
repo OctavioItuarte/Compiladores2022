@@ -3,7 +3,7 @@ ee{
     i8 num;
     num=:0; d=:0; q=:0; i=:0; c=:0; t=:0; n=:0;
     fun awf(i8 num): f32{
-        num=:0;
+        num=:120;
         f32 q;
         return(q);
     }
@@ -11,8 +11,9 @@ ee{
     fun aa(i8 num): f32{
         const u=: 100;
         i8 m;
+        m=:120;
         if(num -3< m+i) then{
-            n=: -1;
+            n=: 120;
             return(3);
         }
         else
@@ -57,6 +58,6 @@ ee{
     else 1;
     f32 w;
     <<w=:tof32(q+5);
-    w=:aa(i);
+    w=:aa(0);
     
 }

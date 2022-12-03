@@ -35,12 +35,26 @@ public class TablaSimbolos{
         return resultado;
     }
 
-    public List<Simbolo> getIds(){
+    public List<Simbolo> getIdsFlotantes(){
         List<Simbolo> resultado= new ArrayList<>();
-        String uso;
+        String uso; String tipo;
         for(Map.Entry<String, Simbolo> entry : tabla.entrySet()){
             uso=entry.getValue().getUso();
-            if((uso!=null) && ((uso.equals("variable")) || (uso.equals("identificador_funcion")) || (uso.equals("parametro")))){
+            tipo=entry.getValue().getTipo();
+            if((uso!=null) && tipo!=null && tipo.equals("F32") && ((uso.equals("variable")) || (uso.equals("identificador_funcion")) || (uso.equals("parametro")))){
+                resultado.add(entry.getValue());
+            }
+        }
+        return resultado;
+    }
+
+    public List<Simbolo> getIdsEnteros(){
+        List<Simbolo> resultado= new ArrayList<>();
+        String uso; String tipo;
+        for(Map.Entry<String, Simbolo> entry : tabla.entrySet()){
+            uso=entry.getValue().getUso();
+            tipo=entry.getValue().getTipo();
+            if((uso!=null) && tipo!=null && tipo.equals("I8") && ((uso.equals("variable")) || (uso.equals("identificador_funcion")) || (uso.equals("parametro")))){
                 resultado.add(entry.getValue());
             }
         }

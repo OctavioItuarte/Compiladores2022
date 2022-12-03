@@ -5,7 +5,6 @@ import java.io.FileWriter;
 
 import java.util.*;
 
-import javax.lang.model.util.ElementScanner14;
 
 public class GeneradorCodigo{
     
@@ -17,6 +16,10 @@ public class GeneradorCodigo{
     private static EstructuraTercetos estructuraActual;
     private static StringBuilder assembler=new StringBuilder();
     private static HashMap<String, Boolean> registros;
+
+    private static int numLabel=0;
+
+    private static StringBuilder impresion=new StringBuilder();
 
     public GeneradorCodigo(List<EstructuraTercetos> lista){
         listEstructuraTercetos=lista;        
@@ -112,7 +115,7 @@ public class GeneradorCodigo{
             }else
             */
         }
-        //assembler.append("");
+        //assembler.append(impresion.toString());
         assembler.append("END START");
 
         generarArchivo();
@@ -158,12 +161,19 @@ public class GeneradorCodigo{
                 generarSaltoCondicional();
                 break;
             case "tof32":
-                // codigo
+                generarConversion();
+                break;
+            case "out":
+                assembler.append("invoke StdOut, addr"+value2);
                 break;
             default: //LABEL
                 assembler.append(value1+": ");
                 break;
         }
+    }
+
+    public static void generarConversion(){
+
     }
 
     public static void generarOperacion(String op){
@@ -184,7 +194,8 @@ public class GeneradorCodigo{
                 t2= estructuraActual.getTerceto(numTerceto2);
                 registro2=t2.getRegistro();
                 assembler.append(registro2+"\n");
-                registros.put(t2.getRegistro(), false);
+                
+                liberarRegistro(registro2);
             }
             else
                 assembler.append(value3+"\n");
@@ -203,6 +214,8 @@ public class GeneradorCodigo{
                 assembler.append(op+" "+tercetoActual.getRegistro()+", "+value3+"\n");
             }
         }
+        assembler.append("cmp "+tercetoActual.getRegistro()+", "+"128 \n");
+        assembler.append("jge "+"OVERFLOW_ENTERO"+"\n");
     }
 
     public static void generarAsignacion(){
@@ -214,6 +227,8 @@ public class GeneradorCodigo{
             t1= estructuraActual.getTerceto(numTerceto1);
             registro1=t1.getRegistro();
             assembler.append("mov "+value2+", "+registro1+"\n");
+            
+            liberarRegistro(registro1);
         }
         else{
             assembler.append("mov bl, "+value3+ "\n");
@@ -234,13 +249,15 @@ public class GeneradorCodigo{
             t1= estructuraActual.getTerceto(numTerceto1);
             registro1=t1.getRegistro();
             assembler.append("cmp "+ registro1+", ");
-            registros.put(t1.getRegistro(),false);
+            liberarRegistro(registro1);
+            
             if(value3!=null && value3.startsWith("[")){
                 numTerceto2=Integer.valueOf(value3.substring(1, value3.length()-1));
                 t2= estructuraActual.getTerceto(numTerceto2);
                 registro2=t2.getRegistro();
                 assembler.append(registro2+"\n");
-                registros.put(t2.getRegistro(), false);
+                liberarRegistro(registro2);
+                
             }
             else
                 assembler.append(value3+"\n");
@@ -250,13 +267,14 @@ public class GeneradorCodigo{
                 numTerceto2=Integer.valueOf(value3.substring(1, value3.length()-1));
                 t2= estructuraActual.getTerceto(numTerceto2);
                 registro2=t2.getRegistro();
-                registros.put(t2.getRegistro(),false);
-                assembler.append("cmp "+ registro2+", "+ value2 +"\n");
+                
+                liberarRegistro(registro2);
+                assembler.append("cmp "+ value2+", "+ registro2+"\n");
             }
             else{
                 //asignarRegistroTerceto();
-                assembler.append("mov "+"ebx"+", "+value2+"\n");
-                assembler.append("cmp "+"ebx"+", "+value3+"\n");
+                assembler.append("mov "+"bl"+", "+value2+"\n");
+                assembler.append("cmp "+"bl"+", "+value3+"\n");
                 
             }
         }
@@ -308,7 +326,8 @@ public class GeneradorCodigo{
                 t2= estructuraActual.getTerceto(numTerceto2);
                 registro2=t2.getRegistro();
                 assembler.append(registro2+"\n");
-                registros.put(t2.getRegistro(), false);
+                liberarRegistro(registro2);
+                
             }
             else
                 assembler.append(value3+"\n");
@@ -320,6 +339,7 @@ public class GeneradorCodigo{
                 numTerceto2=Integer.valueOf(value3.substring(1, value3.length()-1));
                 t2= estructuraActual.getTerceto(numTerceto2);
                 registro2=t2.getRegistro();
+                liberarRegistro(registro2);
                 assembler.append(op+" "+ tercetoActual.getRegistro()+", "+ registro2 +"\n");
             }
             else{
@@ -336,6 +356,7 @@ public class GeneradorCodigo{
 
 
     public static void asignarRegistroTerceto(){
+
         if(!registros.get("eax")){
             tercetoActual.setRegistro("al");
             registros.put("eax", true);
@@ -360,6 +381,35 @@ public class GeneradorCodigo{
 
         }
     }
+    
+    public static void liberarRegistro(String registro){
+        switch(registro){
+            case "eax":
+            case "ax":
+            case "ah":
+            case "al":
+                registros.put("eax", false);
+                break;
+            case "ebx":
+            case "bx":
+            case "bh":
+            case "bl":
+                registros.put("ebx", false);
+                break;
+            case "ecx":
+            case "cx":
+            case "ch":
+            case "cl":
+                registros.put("ecx", false);
+                break;
+            case "edx":
+            case "dx":
+            case "dh":
+            case "dl":
+                registros.put("edx", false);
+                break;
+        }
+    }
 
     public static String cambiarFormato(String lexema){
         if(lexema!=null){
@@ -379,16 +429,31 @@ public class GeneradorCodigo{
     public static void generarDatos(){
         List<Simbolo> constantes= Parser.tablaDeSimbolos.getConstantes();
         //List<String> numeros= Parser.tablaDeSimbolos.getNumeros();
-        List<Simbolo> ids= Parser.tablaDeSimbolos.getIds();
+        List<Simbolo> idsEnteros= Parser.tablaDeSimbolos.getIdsEnteros();
+        List<Simbolo> idsFlotantes= Parser.tablaDeSimbolos.getIdsFlotantes();
         for(Simbolo s: constantes){
             assembler.append(cambiarFormato(s.getLexema())+" db "+ s.getValor()+"\n");
+            //impresion.append("invoke StdOut, addr CONST \n");
+            //impresion.append("invoke StdOut, addr "+cambiarFormato(s.getLexema())+"\n");
         }
         //for(String s: numeros){
             //assembler.append(s+" db "+ s+"\n");
         //}
-        for(Simbolo s: ids){
-            assembler.append(cambiarFormato(s.getLexema())+" db "+ "?"+ "\n");
+        for(Simbolo s: idsFlotantes){
+            assembler.append(cambiarFormato(s.getLexema())+" dd "+ "?"+ "\n");
         }
+        for(Simbolo s: idsEnteros){
+            assembler.append(cambiarFormato(s.getLexema())+" db "+ "?"+ "\n");
+            //impresion.append("invoke StdOut, addr ID\n");
+            //impresion.append("invoke StdOut, addr "+cambiarFormato(s.getLexema())+"\n");
+        }
+        //assembler.append("ID db \"ID:\" \n");
+       //assembler.append("CONST db \"Constante:\" \n");
+        assembler.append("msj_exc1 db \"Exception: Resultado de suma entre enteros excede el rango permitido\" \n");
+        assembler.append("msj_exc2 db \"Exception: Resultado de suma entre flotantes excede el rango permitido\" \n");
+        assembler.append("msj_exc3 db \"Exception: invocacion a funcion no permitida (invocacion mutua)\" \n");
+        assembler.append("NAME_LAST_FUNCTION db ? \n");
+        
         
     }
 
@@ -419,31 +484,38 @@ public class GeneradorCodigo{
     }
 
     public static void generarExcepciones(){
-        assembler.append("OVERFLOWENTERO: ");
-        chequearYgenerarExcepcionOverflowEntero();
-        assembler.append("OVERFLOWFLOTANTE: ");
+        assembler.append("OVERFLOW_ENTERO: ");
+        chequearYgenerarExcepcionOverflowEnteroConSigno();
+        //assembler.append("OVERFLOW_ENTERO_SIN_SIGNO: ");
+        //chequearYgenerarExcepcionOverflowEnteroSinSigno();
+        assembler.append("OVERFLOW_FLOTANTE: ");
         chequearYgenerarExcepcionOverflowFlotante();
-        assembler.append("RECURSIONMUTUA: ");
+        assembler.append("RECURSION_MUTUA: ");
         chequearYgenerarExcepcionRecursionMutua();
 
     }
 
-    public static void chequearYgenerarExcepcionOverflowEntero(){
-        
-
-        assembler.append("cmp "+"ebp"+", "+"128 \n");
-        assembler.append("je "+"FIN_EXCEPCION_OVERFLOW_ENTERO \n");
-        assembler.append("invoke MessageBox, NULL, addr msj_exc1, addr msj_exc1, MB_OK \n");
+    public static void chequearYgenerarExcepcionOverflowEnteroSinSigno(){
+        assembler.append("invoke StdOut, addr msj_exc1 \n");
         assembler.append("invoke ExitProcess, 0 \n");
-        assembler.append("FIN_EXCEPCION_OVERFLOW_ENTERO: \n");
+        assembler.append("ret \n");
+    }
+
+    public static void chequearYgenerarExcepcionOverflowEnteroConSigno(){
+        assembler.append("invoke StdOut, addr msj_exc1 \n");
+        assembler.append("invoke ExitProcess, 0 \n");
         assembler.append("ret \n");
     }
 
     public static void chequearYgenerarExcepcionOverflowFlotante(){
+        assembler.append("invoke StdOut, addr msj_exc2 \n");
+        assembler.append("invoke ExitProcess, 0 \n");
         assembler.append("ret \n");
     }
 
     public static void chequearYgenerarExcepcionRecursionMutua(){
+        assembler.append("invoke StdOut, addr msj_exc3 \n");
+        assembler.append("invoke ExitProcess, 0 \n");
         assembler.append("ret \n");
     }
 

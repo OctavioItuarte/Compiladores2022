@@ -1,17 +1,9 @@
 %{
 package com.tp.compiladores;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.util.Scanner;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 %}
 
 %token IF THEN ELSE END_IF OUT FUN RETURN I8 F32 WHEN CTE_ENTERA CTE_FLOTANTE ID CONTINUE CADENA_MULT ASIGNACION 
@@ -155,31 +147,31 @@ SentenciaEjecutable: Seleccion
 
 Asig: ID ASIGNACION Expresion ';'{String lex=tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 								if(tablaDeSimbolos.getUso(lex).equals("constante"))
-									errores_semanticos.add(new ErrorLinea("No se permite la asignacion a una constante", this.linea.getNumeroLinea()));
+									errores_semanticos.add(new ErrorLinea("No se permite la asignacion a una constante", linea.getNumeroLinea()));
 								if (!mismoTipoExpID($1.sval)) 
-									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea())); 
+									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea())); 
 								estructuraActual.crearTerceto($2.sval, lex, $3.sval);
 								} 
 
 	| ID ASIGNACION ID ';' {String lex=tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 							if(tablaDeSimbolos.getUso(lex).equals("constante"))
-								errores_semanticos.add(new ErrorLinea("No se permite la asignacion a una constante", this.linea.getNumeroLinea()));
+								errores_semanticos.add(new ErrorLinea("No se permite la asignacion a una constante", linea.getNumeroLinea()));
 							if (!mismoTipoIds($1.sval, $3.sval)) 
-								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 							estructuraActual.crearTerceto($2.sval, lex, tablaDeSimbolos.getRefSimbolo($3.sval, ambito));}
 
     | ID ASIGNACION cte ';' {String lex=tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 							if(tablaDeSimbolos.getUso(lex).equals("constante"))
-								errores_semanticos.add(new ErrorLinea("No se permite la asignacion a una constante", this.linea.getNumeroLinea()));
+								errores_semanticos.add(new ErrorLinea("No se permite la asignacion a una constante", linea.getNumeroLinea()));
 							if (!mismoTipoIDCte($1.sval, $3.sval))
-								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 							estructuraActual.crearTerceto($2.sval, lex, $3.sval);}
 
 	| ID ASIGNACION signo cte ';' {String lex=tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 									if(tablaDeSimbolos.getUso(lex).equals("constante"))
-										errores_semanticos.add(new ErrorLinea("No se permite la asignacion a una constante", this.linea.getNumeroLinea()));
+										errores_semanticos.add(new ErrorLinea("No se permite la asignacion a una constante", linea.getNumeroLinea()));
 									if (!mismoTipoIDCte($1.sval, $4.sval))
-										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea())); 
+										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea())); 
 									tablaDeSimbolos.setLexema($3.sval, $4.sval);
 									estructuraActual.crearTerceto($2.sval, lex, $3.sval + $4.sval);}
 
@@ -219,7 +211,7 @@ Salida : OUT '(' CADENA_MULT ')' {estructuraActual.crearTerceto("OUT", $3.sval, 
 						 
 Expresion: ID signo ID {
 					if (!mismoTipoIds($1.sval, $3.sval)) 
-						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 					String lex1 =tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 					String lex2 =tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 					
@@ -233,7 +225,7 @@ Expresion: ID signo ID {
 
 	     | ID signo cte {
 			if (!mismoTipoIDCte($1.sval, $3.sval)) 
-		 		errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 		errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 			
 			String lex1 =tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 			estructuraActual.crearTerceto($2.sval, lex1, $3.sval);
@@ -246,7 +238,7 @@ Expresion: ID signo ID {
 
 	     | Expresion signo ID {
 			if (!mismoTipoExpID($3.sval))
-				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 			String lex=tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 			valores.add(lex);
 			
@@ -258,7 +250,7 @@ Expresion: ID signo ID {
 
 	     | Expresion signo cte {
 			if (!mismoTipoExpCte($3.sval)) 
-				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 			estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);
 			$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 			estructuraActual.addTercetoWhen();
@@ -266,7 +258,7 @@ Expresion: ID signo ID {
 			listOperadores.add($2.sval);
 			} 
 	     | ID '*' ID {if (!mismoTipoIds($1.sval, $3.sval))
-						 errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+						 errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 					String lex1 =tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 					String lex2 =tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 					
@@ -279,7 +271,7 @@ Expresion: ID signo ID {
 					}
 
 		 | ID '/' ID {if (!mismoTipoIds($1.sval, $3.sval)) 
-		 				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 				errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 					String lex1 =tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 					String lex2 =tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 					
@@ -291,7 +283,7 @@ Expresion: ID signo ID {
 					listOperadores.add($2.sval);
 					} 
 	     | ID '*' cte {if (!mismoTipoIDCte($1.sval, $3.sval)) 
-		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 							String lex= tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 							estructuraActual.crearTerceto($2.sval, lex, $3.sval);
 							$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
@@ -301,7 +293,7 @@ Expresion: ID signo ID {
 							listOperadores.add($2.sval);
 							} 
 	     | ID '/' cte {if (!mismoTipoIDCte($1.sval, $3.sval)) 
-		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 						String lex= tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 						estructuraActual.crearTerceto($2.sval, lex, $3.sval);
 						$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
@@ -312,7 +304,7 @@ Expresion: ID signo ID {
 						}
 
 	     | Expresion '*' ID  {if (!mismoTipoExpID($3.sval)) 
-		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 							String lex=tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 							estructuraActual.crearTerceto($2.sval, $1.sval, lex);
 							$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
@@ -322,7 +314,7 @@ Expresion: ID signo ID {
 							}
 
 	     | Expresion '/' ID {if (!mismoTipoExpID($3.sval)) 
-		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 							String lex= tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 							estructuraActual.crearTerceto($2.sval, $1.sval, lex);
 							$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
@@ -332,7 +324,7 @@ Expresion: ID signo ID {
 							}
 
 	     | Expresion '*' cte {if (!mismoTipoExpCte($3.sval)) 
-		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 							estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);
 							$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 							estructuraActual.addTercetoWhen();
@@ -340,7 +332,7 @@ Expresion: ID signo ID {
 							listOperadores.add($2.sval);
 							} 
 	     | Expresion '/' cte {if (!mismoTipoExpCte($3.sval)) 
-		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 						errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 							estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);
 							$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 							estructuraActual.addTercetoWhen();
@@ -351,7 +343,7 @@ Expresion: ID signo ID {
 		 | ConversionExplicita
 
 		 | cte signo ID {if (!mismoTipoIDCte($3.sval, $1.sval)) 
-		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 						String lex=tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 						estructuraActual.crearTerceto($2.sval, $1.sval, lex);
 						$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
@@ -362,7 +354,7 @@ Expresion: ID signo ID {
 						}
 
 		 | cte '*' ID {if (!mismoTipoIDCte($3.sval, $1.sval)) 
-		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 						String lex=tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 						estructuraActual.crearTerceto($2.sval, $1.sval, lex);
 						$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
@@ -372,7 +364,7 @@ Expresion: ID signo ID {
 						listOperadores.add($2.sval);
 						} 
 		 | cte '/' ID {if (!mismoTipoIDCte($3.sval, $1.sval)) 
-		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 						String lex=tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 						estructuraActual.crearTerceto($2.sval, $1.sval, lex);
 						$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
@@ -393,6 +385,43 @@ Expresion: ID signo ID {
 								valores.add(funcion);
 								parametrosReales.clear();
 								}
+		 | cte signo cte {
+						if (!mismoTipoCtes($1.sval, $3.sval)) 
+		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
+						
+						estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);
+						$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
+						valores.add($1.sval);
+						valores.add($3.sval);
+						estructuraActual.addTercetoWhen();
+						listOperadores.add($2.sval);
+						
+		 	}
+
+		 | cte '*' cte {
+						if (!mismoTipoCtes($1.sval, $3.sval)) 
+		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
+						
+						estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);
+						$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
+						valores.add($1.sval);
+						valores.add($3.sval);
+						estructuraActual.addTercetoWhen();
+						listOperadores.add($2.sval);
+		 	}
+
+		 | cte '/' cte {
+						if (!mismoTipoCtes($1.sval, $3.sval)) 
+		 					errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
+						
+						estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);
+						$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
+						valores.add($1.sval);
+						valores.add($3.sval);
+						estructuraActual.addTercetoWhen();
+						listOperadores.add($2.sval);
+		 	}
+
          ;
 
 ListParametrosInv: '(' ')'
@@ -408,7 +437,7 @@ ParametroReal: cte {parametrosReales.add($1.sval);}
 ConversionExplicita: TOF32 '(' Expresion ')' {if (conversionValida()){
 												estructuraActual.crearTerceto("tof32", $3.sval, null);
 											  }
-											  	else errores_semanticos.add(new ErrorLinea("No se puede realizar la conversion", this.linea.getNumeroLinea()));
+											  	else errores_semanticos.add(new ErrorLinea("No se puede realizar la conversion", linea.getNumeroLinea()));
 											  $$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 											  }
 				   | TOF32 '('')' {AgregarErrorSintactico("Se espera expresion");}
@@ -485,7 +514,7 @@ Comparador: '<' {listOperadores=listOperadores2; comparador=$1.sval; valores=val
           ;
 
 Comparacion: Expresion Comparador Expresion {if (!mismoTipo()) 
-												errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+												errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 											
 												estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);
 												estructuraActual.addTercetoWhen();
@@ -493,7 +522,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 											
 											}
            | Expresion Comparador cte {if (!mismoTipoExpCte($3.sval)) 
-		   									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 										
 											estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);
 											estructuraActual.addTercetoWhen();
@@ -502,7 +531,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 										
 										}
 		   | Expresion Comparador signo cte {if (!mismoTipoExpCte($4.sval)) 
-		   										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 											
 												estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval + $4.sval );
 												
@@ -512,7 +541,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 												tablaDeSimbolos.setLexema($3.sval, $4.sval);
 											}
            | cte Comparador Expresion {if (!mismoTipoExpCte($1.sval)) 
-		   									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 		   								
 											estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);
 											estructuraActual.addTercetoWhen();
@@ -520,7 +549,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 											$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 										}
 		   | signo cte Comparador Expresion {if (!mismoTipoExpCte($2.sval)) 
-		   										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   										errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 											
 												estructuraActual.crearTerceto($3.sval, $1.sval + $2.sval, $4.sval);
 												estructuraActual.addTercetoWhen();
@@ -529,7 +558,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 												tablaDeSimbolos.setLexema($1.sval, $2.sval);
 											}
            | Expresion Comparador ID {if (!mismoTipoExpID($3.sval)) 
-		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 		   								String lex=tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 										estructuraActual.crearTerceto($2.sval, $1.sval, lex);
 										estructuraActual.addTercetoWhen();
@@ -537,7 +566,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 										$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 									}
            | ID Comparador Expresion {if (!mismoTipoExpID($1.sval)) 
-		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 
 										String lex=tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 										estructuraActual.crearTerceto($2.sval, lex, $3.sval);
@@ -546,7 +575,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 										$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 									}
 		   | cte Comparador ID {if (!mismoTipoIDCte($3.sval, $1.sval)) 
-		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 
 									String lex=tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
 									estructuraActual.crearTerceto($2.sval, $1.sval, lex);
@@ -556,7 +585,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 									$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 								}
 		   | signo cte Comparador ID {if (!mismoTipoIDCte($4.sval, $2.sval)) 
-		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 		   							
 										String lex=tablaDeSimbolos.getRefSimbolo($4.sval, ambito);
 										estructuraActual.crearTerceto($3.sval, $1.sval + $2.sval, lex);
@@ -567,7 +596,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 										tablaDeSimbolos.setLexema($1.sval, $2.sval);
 									}
 		   | ID Comparador cte {if (!mismoTipoIDCte($1.sval, $3.sval)) 
-		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 
 									String lex=tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 									estructuraActual.crearTerceto($2.sval, lex, $3.sval);
@@ -577,7 +606,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 									$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 								}
 		   | ID Comparador signo cte {if (!mismoTipoIDCte($1.sval, $4.sval)) 
-		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   								errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 		   							
 										String lex=tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 										estructuraActual.crearTerceto($2.sval, lex, $3.sval + $4.sval);
@@ -588,7 +617,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 										tablaDeSimbolos.setLexema($3.sval, $4.sval);
 									}
 		   | ID Comparador ID {if (!mismoTipoIds($1.sval, $3.sval)) 
-		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 		   						
 									String lex1=tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
 									String lex2=tablaDeSimbolos.getRefSimbolo($3.sval, ambito);
@@ -600,7 +629,7 @@ Comparacion: Expresion Comparador Expresion {if (!mismoTipo())
 									$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 								}
 		   | cte Comparador cte {if (!mismoTipoCtes($1.sval, $3.sval)) 
-		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+		   							errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 		   							estructuraActual.crearTerceto($2.sval, $1.sval, $3.sval);
 									estructuraActual.addTercetoWhen();
 									valores1.add($1.sval);
@@ -657,7 +686,7 @@ HeaderEtiqueta: Etiqueta HeaderFor {estructuraActual.addRefEtiqueta(refEtiqueta)
 
 AsigFor: ID ASIGNACION CTE_ENTERA
 		{if (!mismoTipoIDCte($1.sval, $3.sval)) 
-			errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+			errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 		estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));
 		estructuraActual.crearTerceto($2.sval, estructuraActual.getIdFor(), $3.sval);
 		estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
@@ -668,7 +697,7 @@ AsigFor: ID ASIGNACION CTE_ENTERA
 	 	}
 	   | ID ASIGNACION ID
 		{if (!mismoTipoIds($1.sval, $3.sval)) 
-			errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+			errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 		estructuraActual.addIdFor(tablaDeSimbolos.getRefSimbolo($1.sval, ambito));
 		estructuraActual.crearTerceto($2.sval, estructuraActual.getIdFor(), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));
 		estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
@@ -726,25 +755,25 @@ SentenciaControl: HeaderFor CuerpoFor
 
 
 CondicionFor: ID Comparador ID {if (!mismoTipoIds($1.sval, $3.sval)) 
-									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+									errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 								estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));
 								$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 								}
 
 			| ID Comparador Expresion {if (!mismoTipoExpID($1.sval)) 
-											errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+											errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 									   estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);
 									   $$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 									   }
 			
 			| ID Comparador CTE_ENTERA {if (!mismoTipoIDCte($1.sval, $3.sval)) 
-											errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+											errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 										estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval);
 										$$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 										}
 			
 			| ID Comparador signo CTE_ENTERA {if (!mismoTipoIDCte($1.sval, $3.sval)) 
-												errores_semanticos.add(new ErrorLinea("Tipos incompartibles", this.linea.getNumeroLinea()));
+												errores_semanticos.add(new ErrorLinea("Tipos incompartibles", linea.getNumeroLinea()));
 											  tablaDeSimbolos.setLexema($3.sval, $4.sval);
 											  estructuraActual.crearTerceto($2.sval, tablaDeSimbolos.getRefSimbolo($1.sval, ambito), $3.sval+$4.sval);
 											  $$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
@@ -753,7 +782,7 @@ CondicionFor: ID Comparador ID {if (!mismoTipoIds($1.sval, $3.sval))
 
 SentenciaReturn: RETURN '(' ID ')' ';' {
 					if(!dentroDeFun){
-						errores_semanticos.add(new ErrorLinea("No se encuentra dentro de una funcion", this.linea.getNumeroLinea()));
+						errores_semanticos.add(new ErrorLinea("No se encuentra dentro de una funcion", linea.getNumeroLinea()));
 						System.out.println("No se encuentra dentro del cuerpo de una funcion");
 					}
 					else{
@@ -764,7 +793,7 @@ SentenciaReturn: RETURN '(' ID ')' ';' {
 				}
 	  		  | RETURN '(' cte ')' ';' {
 					if(!dentroDeFun){
-						errores_semanticos.add(new ErrorLinea("No existe ID para la asignacion", this.linea.getNumeroLinea()));
+						errores_semanticos.add(new ErrorLinea("No existe ID para la asignacion", linea.getNumeroLinea()));
 						System.out.println("No se encuentra dentro del cuerpo de una funcion");
 					}
 					else{
@@ -774,7 +803,7 @@ SentenciaReturn: RETURN '(' ID ')' ';' {
 				}
 	  		  | RETURN '(' Expresion ')' ';' {
 					if(!dentroDeFun){
-						errores_semanticos.add(new ErrorLinea("No existe ID para la asignacion", this.linea.getNumeroLinea()));
+						errores_semanticos.add(new ErrorLinea("No existe ID para la asignacion", linea.getNumeroLinea()));
 						System.out.println("No existe ID para la asignacion");
 					}
 					else{
@@ -795,7 +824,7 @@ SentenciaCorte: SentenciaReturn
 					estructuraActual.guardarTercetoBreak();
 				}
 				else{
-					errores_semanticos.add(new ErrorLinea("No se encuentra dentro de una sentencia de control", this.linea.getNumeroLinea()));
+					errores_semanticos.add(new ErrorLinea("No se encuentra dentro de una sentencia de control", linea.getNumeroLinea()));
 					System.out.println("No se encuentra dentro de una sentencia de control");
 				}
 			  }
@@ -806,7 +835,7 @@ SentenciaCorte: SentenciaReturn
 					estructuraActual.guardarTercetoBreakCte();
 				}
 				else{
-					errores_semanticos.add(new ErrorLinea("No se espera el retorno de una sentencia de control", this.linea.getNumeroLinea()));
+					errores_semanticos.add(new ErrorLinea("No se espera el retorno de una sentencia de control", linea.getNumeroLinea()));
 					System.out.println("No se espera el retorno de una sentencia de control");
 				}
 				}
@@ -817,7 +846,7 @@ SentenciaCorte: SentenciaReturn
 					estructuraActual.guardarTercetoBreakCte();
 				}
 				else{
-					errores_semanticos.add(new ErrorLinea("No se espera el retorno de una sentencia de control", this.linea.getNumeroLinea()));
+					errores_semanticos.add(new ErrorLinea("No se espera el retorno de una sentencia de control", linea.getNumeroLinea()));
 					System.out.println("No se espera el retorno de una sentencia de control");
 			  	}
 			  }
@@ -873,7 +902,6 @@ public static String ambito = "";
 
 //-----------------------------------------------------------------------
 
-public static AnalizadorLexico lexico;
 
     public static void chequearYAsignarParametros(List<String> lista1, List<Simbolo> lista2){
 		int n=lista1.size();
@@ -891,7 +919,7 @@ public static AnalizadorLexico lexico;
 			}
 			else
 				for(int i=0; i<n;i++){
-					estructuraActual.crearTerceto("=:", lista1.get(i), lista2.get(i).getLexema());
+					estructuraActual.crearTerceto("=:", lista2.get(i).getLexema(), lista1.get(i));
 				}			
 		}
 		else{
@@ -901,7 +929,7 @@ public static AnalizadorLexico lexico;
 	}
 
 	public int yylex(){
-		Simbolo simbolo = lexico.yyLex();
+		Simbolo simbolo = AnalizadorLexico.yyLex();
 
 		if ((simbolo.getToken() != 0) || (simbolo.getToken() != -1))
 			yylval = new ParserVal(simbolo.getLexema());
@@ -1057,6 +1085,8 @@ public static AnalizadorLexico lexico;
 			return false;
 			}
 	}
+
+	
 
 	public static boolean mismoTipo(){
 		if (tipoActual.equals(tipoAnterior)){

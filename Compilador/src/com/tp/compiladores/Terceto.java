@@ -7,11 +7,20 @@ public class Terceto {
     private String valor3;
 
     private String registro;
+    private String tipo;
 
     public Terceto(String valor1, String valor2, String valor3) {
         this.valor1 = valor1;
         this.valor2 = valor2;
         this.valor3 = valor3;
+    }
+
+    public String getTipo(){
+        return this.tipo;
+    }
+
+    public void setTipo(String tipo){
+        this.tipo=tipo;
     }
 
     public String getRegistro(){
@@ -57,6 +66,6 @@ public class Terceto {
     }
 
     public void imprimir(){
-        System.out.println("("+valor1+","+valor2+","+valor3+")");
+        System.out.println("("+valor1+","+valor2+","+valor3+")"+"  -  Tipo: "+this.tipo);
     }
 }

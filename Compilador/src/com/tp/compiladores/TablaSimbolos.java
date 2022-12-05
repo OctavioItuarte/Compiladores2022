@@ -61,6 +61,18 @@ public class TablaSimbolos{
         return resultado;
     }
 
+    public List<Simbolo> getCadenas(){
+        List<Simbolo> resultado= new ArrayList<>();
+        String uso;
+        for(Map.Entry<String, Simbolo> entry : tabla.entrySet()){
+            uso=entry.getValue().getUso();
+            if((uso!=null) && (uso.equals("cadena_caracteres"))){
+                resultado.add(entry.getValue());
+            }
+        }
+        return resultado;
+    }
+
     private String cambiarAmbito(String[] ambitos, int n){
         String resultado=ambitos[0];
         for(int i=1; i<n; i++){
@@ -137,8 +149,17 @@ public class TablaSimbolos{
     public String getRefFuncion(String lexema, String ambito){
         String existe=existeSimboloAmbito(lexema, ambito);
         // debe buscar el simbolo en la tabla en dicho ambito.
-        if((existe!=null) && (tabla.get(existe).getUso().equals("identificador_funcion")))
-            return (existe);
+        if((existe!=null) && (tabla.get(existe).getUso().equals("identificador_funcion"))){
+            
+            String [] lex = existe.split(":");
+            String resultado="";
+            for(int i=1; i<lex.length;i++){
+                resultado=resultado.concat(lex[i]+":");
+            }
+            resultado=resultado.concat(lex[0]);
+            
+            return (resultado);
+        }
         else{
             System.out.println("Funcion " + lexema +" no declarada");
             ErrorLinea err=new ErrorLinea("Funcion " + lexema +" no declarada", this.linea.getNumeroLinea());

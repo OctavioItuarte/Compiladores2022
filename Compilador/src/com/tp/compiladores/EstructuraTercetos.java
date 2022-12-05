@@ -33,9 +33,6 @@ public class EstructuraTercetos {
 
     private List<Terceto> tercetosWhen = new ArrayList<>();
     //public List<ErrorLinea> errores_semanticos;
-
-    private HashMap<Integer, Integer> labels= new HashMap<>(); 
-    //clave: numero de label, valor:numero de terceto dentro de la estructura
  
     public EstructuraTercetos(String nombre) {
         this.nombre=nombre;
@@ -207,9 +204,28 @@ public class EstructuraTercetos {
         if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse)){
             Terceto terceto= new Terceto(valor1, valor2, valor3);
             this.listTercetos.add(terceto);
+            int pos;
+            if(valor1!=null && !valor1.equals("BI") && !valor1.equals("BF") && !valor1.startsWith("LABEL")){
+                if(valor2!=null && valor2.startsWith("[")){
+                    pos=Integer.valueOf(valor2.substring(1, valor2.length()-1));
+                    if(pos<=cantTercetos())
+                        terceto.setTipo(getTerceto(pos).getTipo());
+                }
+                else{
+                    if(valor3!=null && valor3.startsWith("[")){
+                        pos=Integer.valueOf(valor3.substring(1, valor3.length()-1));
+                        if(pos<=cantTercetos())
+                            terceto.setTipo(getTerceto(pos).getTipo());
+                    }
+                    else
+                        if(Parser.tablaDeSimbolos.getTipo(valor2)!=null && Parser.tablaDeSimbolos.getTipo(valor3)!=null)
+                            if(Parser.tablaDeSimbolos.getTipo(valor2).equals(Parser.tablaDeSimbolos.getTipo(valor3)))
+                                terceto.setTipo(Parser.tablaDeSimbolos.getTipo(valor2));
+                }
+            }
         }
-        
     }
+    
 
     public int cantTercetos(){
         return listTercetos.size();

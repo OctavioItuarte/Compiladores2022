@@ -77,25 +77,25 @@ ListVariables: ID ',' ListVariables {tablaDeSimbolos.add(new Simbolo($1.sval+":"
              ;
 
 HeaderFuncion: Fun '(' Parametro ',' Parametro ')' ':' Tipo {tablaDeSimbolos.setTipo(funcionActual+":"+ambito, estructuraActual.getTipo());
-															if (!parametrosFormales.containsKey(funcionActual+":"+ambito)){
+															if (!parametrosFormales.containsKey(ambito+":"+funcionActual)){
 																List<Simbolo> listparametros=parametros;
-																parametrosFormales.put(funcionActual+":"+ambito, listparametros);
+																parametrosFormales.put(ambito+":"+funcionActual, listparametros);
 															}
 															parametros=new ArrayList<>();
 															ambito= ambito+":"+funcionActual;
 															}
 			 | Fun '(' Parametro ')' ':' Tipo {tablaDeSimbolos.setTipo(funcionActual+":"+ambito, estructuraActual.getTipo());
-			 									if (!parametrosFormales.containsKey(funcionActual+":"+ambito)){
+			 									if (!parametrosFormales.containsKey(ambito+":"+funcionActual)){
 													List<Simbolo> listparametros=parametros;
-													parametrosFormales.put(funcionActual+":"+ambito, listparametros);
+													parametrosFormales.put(ambito+":"+funcionActual, listparametros);
 												}
 												parametros=new ArrayList<>();
 												ambito= ambito+":"+funcionActual;
 												}
 			 | Fun '(' ')' ':' Tipo {tablaDeSimbolos.setTipo(funcionActual+":"+ambito, estructuraActual.getTipo());
-			 						if (!parametrosFormales.containsKey(funcionActual+":"+ambito)){
+			 						if (!parametrosFormales.containsKey(ambito+":"+funcionActual)){
 										List<Simbolo> listparametros=parametros;
-										parametrosFormales.put(funcionActual+":"+ambito, listparametros);
+										parametrosFormales.put(ambito+":"+funcionActual, listparametros);
 									}
 									parametros=new ArrayList<>();
 									ambito= ambito+":"+funcionActual;
@@ -111,7 +111,7 @@ HeaderFuncion: Fun '(' Parametro ',' Parametro ')' ':' Tipo {tablaDeSimbolos.set
 
 Fun: FUN ID {tablaDeSimbolos.add(new Simbolo($2.sval+":"+ambito, 269, "identificador_funcion"));
 			 funcionActual=$2.sval;
-			 estructuraActual=new EstructuraTercetos($2.sval+":"+ambito);
+			 estructuraActual=new EstructuraTercetos(ambito+":"+$2.sval);
 			 listEstructurasSeguimiento.add(estructuraActual);
 			 listEstructurasTercetos.add(estructuraActual);
 			 dentroDeFun=true;
@@ -380,9 +380,10 @@ Expresion: ID signo ID {
 									
 								}
 								estructuraActual.crearTerceto("BI", funcion, null);
-								tipoActual=tablaDeSimbolos.getTipo(funcion);
-								$$.sval=funcion;
-								valores.add(funcion);
+								String simboloFuncion= tablaDeSimbolos.getRefSimbolo($1.sval, ambito);
+								tipoActual=tablaDeSimbolos.getTipo(simboloFuncion);
+								$$.sval=simboloFuncion;
+								valores.add(simboloFuncion);
 								parametrosReales.clear();
 								}
 		 | cte signo cte {
@@ -435,9 +436,12 @@ ParametroReal: cte {parametrosReales.add($1.sval);}
              ;
 
 ConversionExplicita: TOF32 '(' Expresion ')' {if (conversionValida()){
+												
+												estructuraActual.crearTerceto("=:","conv", $3.sval);
 												estructuraActual.crearTerceto("tof32", $3.sval, null);
+												estructuraActual.getTerceto(estructuraActual.cantTercetos()-1).setTipo("F32");
 											  }
-											  	else errores_semanticos.add(new ErrorLinea("No se puede realizar la conversion", linea.getNumeroLinea()));
+												else errores_semanticos.add(new ErrorLinea("No se puede realizar la conversion", linea.getNumeroLinea()));
 											  $$.sval="["+String.valueOf(estructuraActual.cantTercetos()-1)+"]";
 											  }
 				   | TOF32 '('')' {AgregarErrorSintactico("Se espera expresion");}
@@ -786,8 +790,12 @@ SentenciaReturn: RETURN '(' ID ')' ';' {
 						System.out.println("No se encuentra dentro del cuerpo de una funcion");
 					}
 					else{
-						estructuraActual.crearTerceto("=:", tablaDeSimbolos.getRefFuncion(funcionActual, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));
+						estructuraActual.crearTerceto("=:", tablaDeSimbolos.getRefSimbolo(funcionActual, ambito), tablaDeSimbolos.getRefSimbolo($3.sval, ambito));
 						estructuraActual.crearTerceto("BI",null, null);
+						if(funcionActual!=null && !mismoTipoIds(funcionActual, $3.sval)){
+							errores_semanticos.add(new ErrorLinea("El tipo de retorno de la funcion no corresponde con el tipo del ID en el return", linea.getNumeroLinea()));
+							System.out.println("El tipo de retorno de la funcion no corresponde con el tipo del ID en el return");
+						}
 					}	
 						
 				}
@@ -797,8 +805,12 @@ SentenciaReturn: RETURN '(' ID ')' ';' {
 						System.out.println("No se encuentra dentro del cuerpo de una funcion");
 					}
 					else{
-						estructuraActual.crearTerceto("=:", tablaDeSimbolos.getRefFuncion(funcionActual, ambito), $3.sval);
+						estructuraActual.crearTerceto("=:", tablaDeSimbolos.getRefSimbolo(funcionActual, ambito), $3.sval);
 						estructuraActual.crearTerceto("BI",null, null);
+						if(funcionActual!=null && !mismoTipoIDCte(funcionActual, $3.sval)){
+							errores_semanticos.add(new ErrorLinea("El tipo de retorno de la funcion no corresponde con el tipo del ID en el return", linea.getNumeroLinea()));
+							System.out.println("El tipo de retorno de la funcion no corresponde con el tipo del ID en el return");
+						}
 					}	
 				}
 	  		  | RETURN '(' Expresion ')' ';' {
@@ -807,8 +819,12 @@ SentenciaReturn: RETURN '(' ID ')' ';' {
 						System.out.println("No existe ID para la asignacion");
 					}
 					else{
-						estructuraActual.crearTerceto("=:", tablaDeSimbolos.getRefFuncion(funcionActual, ambito), $3.sval);
+						estructuraActual.crearTerceto("=:", tablaDeSimbolos.getRefSimbolo(funcionActual, ambito), $3.sval);
 						estructuraActual.crearTerceto("BI",null, null);
+						if(funcionActual!=null && !mismoTipoExpID(funcionActual)){
+							errores_semanticos.add(new ErrorLinea("El tipo de retorno de la funcion no corresponde con el tipo del ID en el return", linea.getNumeroLinea()));
+							System.out.println("El tipo de retorno de la funcion no corresponde con el tipo del ID en el return");
+						}
 					}	
 				}
 			  | RETURN '(' ID ')' {AgregarErrorSintactico("Falta ;");}
@@ -840,6 +856,7 @@ SentenciaCorte: SentenciaReturn
 				}
 				}
 		 	  | BREAK signo cte ';' {
+				tablaDeSimbolos.setLexema($2.sval, $3.sval);
 				if((dentroDeFor) && (esperandoBreakcte)){
 					estructuraActual.crearTerceto("=:", estructuraActual.getIdAsigFor(), $2.sval + $3.sval);
 					estructuraActual.crearTerceto("BI", null, null);
@@ -1142,7 +1159,6 @@ public static String ambito = "";
 		String uso, valor;
 		List<Float> val1=new ArrayList<>();
 		List<Float> val2=new ArrayList<>();
-		System.out.println("chequeo");
 		for(String s: valores1){
 			uso=tablaDeSimbolos.getUso(s);
 			valor=tablaDeSimbolos.getValor(s);
@@ -1176,12 +1192,6 @@ public static String ambito = "";
 
 		float resultado1=0;
 		float resultado2=0;
-
-		System.out.println("cantidad op1 "+listOperadores1.size());
-		System.out.println("cantidad op2 "+listOperadores2.size());
-
-		System.out.println("cantidad val1 "+val1.size()+" - "+"cantidad valores1 "+ valores1.size());
-		System.out.println("cantidad val2 "+val2.size()+" - "+"cantidad valores2 "+ valores2.size());
 
 		if((val1.size()==listOperadores1.size()+1) && (val2.size()==listOperadores2.size()+1)){
 			int n=listOperadores1.size();
@@ -1241,8 +1251,6 @@ public static String ambito = "";
 		if(val1.size()==1 && val2.size()==1){
 			resultado1=val1.get(0);
 			resultado2=val2.get(0);
-			System.out.println("resultado1: "+resultado1);
-			System.out.println("resultado2: "+resultado2);
 			condicionWhenFalse=!getVerificacionCondicion(resultado1, resultado2, comparador);
 		}
 

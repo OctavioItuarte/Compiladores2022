@@ -79,7 +79,7 @@ public class AnalizadorLexico {
 		if (estado  == -1){
 			System.out.println(" Linea: " + Parser.linea + " Error: simbolo no reconocido");
 		}
-		
+		System.out.println("asdf");
 		return new Simbolo(lexema, valor);
 	}
 

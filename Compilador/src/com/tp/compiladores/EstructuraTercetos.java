@@ -28,7 +28,6 @@ public class EstructuraTercetos {
 
     private List<String> etiquetasFor = new ArrayList<>();
 
-
     private List<String> listIdAsigFor= new ArrayList<>();
 
     private List<Terceto> tercetosWhen = new ArrayList<>();
@@ -42,6 +41,7 @@ public class EstructuraTercetos {
     public String getNombre(){
         return this.nombre;
     }
+
     ////////////////////////////////////////////////////////////////////////////////////
 
     public void eliminarTercetosWhen(){
@@ -296,6 +296,21 @@ public class EstructuraTercetos {
 
         return ("["+ num + "]");
         //devuelve la posicion dentro de estructuraTercetos, donde se encuentra el terceto referenciado
+    }
+
+
+/////////////////////////////////////////////////////////////////////////////
+    public Terceto ultimoTercetoConRegistro(String registro, int numTercetoActual){
+        Terceto terceto;
+        terceto=getTerceto(numTercetoActual);
+        while((numTercetoActual>=0) && (terceto.getRegistro()!=null) && (!terceto.getRegistro().matches(registro))){
+            terceto=getTerceto(numTercetoActual);
+            numTercetoActual--;
+        }
+        if(numTercetoActual>=0 && terceto.getRegistro()!=null){
+            return terceto;
+        }
+        return null;
     }
 
 }

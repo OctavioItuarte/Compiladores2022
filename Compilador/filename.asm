@@ -26,6 +26,8 @@ i_ee db ?
 num_ee_awf db ?
 c_ee db ?
 q_ee db ?
+@aux1 dd ? 
+@conv dd ? 
 ID db "ID:" 
 msj_exc1 db "Exception: Resultado de suma entre enteros excede el rango permitido" 
 msj_exc2 db "Exception: Resultado de suma entre flotantes excede el rango permitido" 
@@ -37,205 +39,152 @@ LAST_FUNCTION db ?
 AUX_NAME_LAST_FUNCTION db ? 
 .CODE
 OVERFLOW_ENTERO: invoke StdOut, addr msj_exc1 
+jmp end_program
 invoke ExitProcess, 0 
 ret 
 OVERFLOW_FLOTANTE: invoke StdOut, addr msj_exc2 
+jmp end_program
 invoke ExitProcess, 0 
 ret 
 RECURSION_MUTUA: invoke StdOut, addr msj_exc3 
+jmp end_program
 invoke ExitProcess, 0 
 ret 
 LABEL_ee_awf:mov bl, 120
+add bl, 120
+jo OVERFLOW_ENTERO
 mov num_ee_awf, bl
-mov ah, 02h 
-int 21h 
-mov ebx, q_ee_awf
-mov awf_ee, ebx
-mov ah, 02h 
-int 21h 
+fld q_ee_awf
+fst awf_ee
 ret 
 LABEL_ee_aa:invoke StdOut, addr holaaaaa
 mov bl, 120
 mov m_ee_aa, bl
-mov ah, 02h 
-int 21h 
 mov bl, num_ee_aa
 sub bl, 3
 add bl, 1
-cmp bl, 128 
-jge OVERFLOW_ENTERO
+jo OVERFLOW_ENTERO
 add bl, 3
-cmp bl, 128 
-jge OVERFLOW_ENTERO
+jo OVERFLOW_ENTERO
 mov cl, m_ee_aa
 add cl, i_ee
-cmp cl, 128 
-jge OVERFLOW_ENTERO
+jo OVERFLOW_ENTERO
 cmp bl, cl
 jl LABEL0
 mov bl, 120
 mov n_ee, bl
-mov ah, 02h 
-int 21h 
-mov ebx, r_ee_aa
-mov aa_ee, ebx
-mov ah, 02h 
-int 21h 
+fld r_ee_aa
+fst aa_ee
 ret 
 jmp LABEL1
 LABEL0: mov bl, i_ee
 mov m_ee_aa, bl
-mov ah, 02h 
-int 21h 
 LABEL1: mov bl, 2
 add bl, 1
-cmp bl, 128 
-jge OVERFLOW_ENTERO
-mov aa_ee, ebx
+jo OVERFLOW_ENTERO
+mov @conv, ebx
+cbw 
+fild @conv 
+fst aa_ee
 ret 
 START:
-mov bl, 0
-mov num_ee, bl
-mov ah, 02h 
-int 21h 
-mov bl, 0
-mov d_ee, bl
-mov ah, 02h 
-int 21h 
-mov bl, 0
-mov q_ee, bl
-mov ah, 02h 
-int 21h 
-mov bl, 0
-mov i_ee, bl
-mov ah, 02h 
-int 21h 
-mov bl, 0
-mov c_ee, bl
-mov ah, 02h 
-int 21h 
-mov bl, 0
-mov t_ee, bl
-mov ah, 02h 
-int 21h 
-mov bl, 0
-mov n_ee, bl
-mov ah, 02h 
-int 21h 
-mov bl, a_ee
-sub bl, 1
-cmp bl, b_ee
+mov cl, 0
+mov num_ee, cl
+mov cl, 0
+mov d_ee, cl
+mov cl, 0
+mov q_ee, cl
+mov cl, 0
+mov i_ee, cl
+mov cl, 0
+mov c_ee, cl
+mov cl, 0
+mov t_ee, cl
+mov cl, 0
+mov n_ee, cl
+mov cl, a_ee
+sub cl, 1
+cmp cl, b_ee
 je LABEL2
-mov bl, t_ee
-mov c_ee, bl
-mov ah, 02h 
-int 21h 
-LABEL2: mov bl, i_ee
-cmp bl, c_ee
+mov cl, t_ee
+mov c_ee, cl
+LABEL2: mov cl, i_ee
+cmp cl, c_ee
 jl LABEL3
-mov bl, q_ee
-mov d_ee, bl
-mov ah, 02h 
-int 21h 
-LABEL3: mov bl, n_ee
-mov i_ee, bl
-mov ah, 02h 
-int 21h 
-LABEL4: mov bl, t_ee
-add bl, 1
-cmp bl, 128 
-jge OVERFLOW_ENTERO
-cmp i_ee, bl
+mov cl, q_ee
+mov d_ee, cl
+LABEL3: mov cl, n_ee
+mov i_ee, cl
+LABEL4: mov cl, t_ee
+add cl, 1
+jo OVERFLOW_ENTERO
+cmp i_ee, cl
 jl LABEL13
-mov bl, i_ee
-sub bl, 3
-mov i_ee, bl
-mov bl, n_ee
-mov i_ee, bl
-mov ah, 02h 
-int 21h 
-LABEL5: mov bl, t_ee
-add bl, 1
-cmp bl, 128 
-jge OVERFLOW_ENTERO
-cmp i_ee, bl
+mov cl, i_ee
+sub cl, 3
+mov i_ee, cl
+mov cl, n_ee
+mov i_ee, cl
+LABEL5: mov cl, t_ee
+add cl, 1
+jo OVERFLOW_ENTERO
+cmp i_ee, cl
 jl LABEL9
-mov bl, i_ee
-sub bl, 3
-mov i_ee, bl
+mov cl, i_ee
+sub cl, 3
+mov i_ee, cl
 jmp LABEL9
-mov bl, n_ee
-mov i_ee, bl
-mov ah, 02h 
-int 21h 
-LABEL6: mov bl, t_ee
-add bl, 1
-cmp bl, 128 
-jge OVERFLOW_ENTERO
-cmp i_ee, bl
+mov cl, n_ee
+mov i_ee, cl
+LABEL6: mov cl, t_ee
+add cl, 1
+jo OVERFLOW_ENTERO
+cmp i_ee, cl
 jl LABEL8
-mov bl, i_ee
-sub bl, 3
-mov i_ee, bl
+mov cl, i_ee
+sub cl, 3
+mov i_ee, cl
 jmp LABEL8
-mov bl, i_ee
-cmp bl, 3
+mov cl, i_ee
+cmp cl, 3
 jl LABEL7
 jmp LABEL5
-LABEL7: mov bl, -2
-mov i_ee, bl
-mov ah, 02h 
-int 21h 
+LABEL7: mov cl, -2
+mov i_ee, cl
 jmp LABEL14
-mov bl, d_ee
-mov d_ee, bl
-mov ah, 02h 
-int 21h 
+mov cl, d_ee
+mov d_ee, cl
 jmp LABEL6
 LABEL8: jmp LABEL5
-LABEL9: mov bl, t_ee
-cmp bl, 3
+LABEL9: mov cl, t_ee
+cmp cl, 3
 jl LABEL10
-mov bl, 1
-mov i_ee, bl
-mov ah, 02h 
-int 21h 
-mov bl, 5
-mov i_ee, bl
-mov ah, 02h 
-int 21h 
+mov cl, 1
+mov i_ee, cl
+mov cl, 5
+mov i_ee, cl
 jmp LABEL14
 jmp LABEL12
-LABEL10: mov bl, t_ee
-cmp bl, 2
+LABEL10: mov cl, t_ee
+cmp cl, 2
 jg LABEL11
-mov bl, -5
-mov i_ee, bl
-mov ah, 02h 
-int 21h 
+mov cl, -5
+mov i_ee, cl
 LABEL11: jmp LABEL13
 LABEL12: jmp LABEL4
-LABEL13: mov bl, 1
-mov i_ee, bl
-mov ah, 02h 
-int 21h 
-LABEL14: mov bl, q_ee
-add bl, 5
-cmp bl, 128 
-jge OVERFLOW_ENTERO
-mov w_ee, ebx
-mov bl, 0
-mov num_ee_aa, bl
-mov ah, 02h 
-int 21h
-cmp LAST_FUNCTION, programa_principal
-je CANCELAR_INVOCACION1
-mov AUX_NAME_LAST_FUNCTION, LAST_FUNCTION
-mov LAST_FUNCTION, "programa_principal"
+LABEL13: mov cl, 1
+mov i_ee, cl
+LABEL14: mov cl, q_ee
+add cl, 5
+jo OVERFLOW_ENTERO
+mov @conv, ecx
+cbw 
+fild @conv 
+fst w_ee
+mov @aux1, ecx 
+mov cl, 0
+mov num_ee_aa, cl
 call LABEL_ee_aa
-mov LAST_FUNCTION, AUX_NAME_LAST_FUNCTION
-CANCELAR_INVOCACION1: mov ebx, aa_ee
-mov w_ee, ebx
-mov ah, 02h 
-int 21h 
-END START
+fld aa_ee
+fst w_ee
+end_program:END START

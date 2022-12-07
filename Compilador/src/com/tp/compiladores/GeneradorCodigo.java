@@ -16,14 +16,17 @@ public class GeneradorCodigo{
     private static EstructuraTercetos estructuraActual;
     private static StringBuilder assembler=new StringBuilder();
     private static HashMap<String, Boolean> registros;
-    private static int numTercetoActual;
-
+    private static HashMap<String, Boolean> registrosFloat;
+    private static int numTercetoActual=0;
+    
+    
     private static int numLabel=0;
 
     //private static StringBuilder impresion=new StringBuilder();
 
     public GeneradorCodigo(List<EstructuraTercetos> lista){
-        listEstructuraTercetos=lista;        
+        listEstructuraTercetos=lista;  
+        
     }
 
     public static void setListaEstructuras(List<EstructuraTercetos> lista){
@@ -71,6 +74,15 @@ public class GeneradorCodigo{
         registros.put("ebx", false);
         registros.put("ecx", false);
         registros.put("edx", false);
+        registrosFloat = new HashMap<String,Boolean>();
+        registrosFloat.put("st(0)", false);
+        registrosFloat.put("st(1)", false);
+        registrosFloat.put("st(2)", false);
+        registrosFloat.put("st(3)", false);
+        registrosFloat.put("st(4)", false);
+        registrosFloat.put("st(5)", false);
+        registrosFloat.put("st(6)", false);
+        registrosFloat.put("st(7)", false);
         assembler.append(".386\n");
         assembler.append(".model flat, stdcall\n");
         assembler.append("option casemap :none\n");
@@ -102,28 +114,68 @@ public class GeneradorCodigo{
             chequearYgenerarInstruccion();
         }
         //assembler.append(impresion.toString());
+        assembler.append("end_program:");
         assembler.append("END START");
 
         generarArchivo();
     }
 
+    
+
     public static void chequearYgenerarInstruccion(){
         //resetearRegistros();
+        String tipo=tercetoActual.getTipo();
         switch(value1){
             case "+":
-                generarOperacion("add");
+                switch(tipo){
+                    case "I8":
+                        generarOperacion("add");
+                        break;
+                    case "F32":
+                        generarOperacionFlotante("fadd");
+                        break;
+                }
                 break;
             case "-":
-                generarOperacion("sub");
+                switch(tipo){
+                    case "I8":
+                        generarOperacion("sub");
+                        break;
+                    case "F32":
+                        generarOperacionFlotante("fsub");
+                        break;
+                }
                 break;
+                
             case "/":
-                generarOperacion("idiv");
+                switch(tipo){
+                    case "I8":
+                        generarOperacion("idiv");
+                        break;
+                    case "F32":
+                        generarOperacionFlotante("fdiv");
+                        break;
+                }
                 break;
             case "*":
-                generarOperacion("imul");
+                switch(tipo){
+                    case "I8":
+                        generarOperacion("imul");
+                        break;
+                    case "F32":
+                        generarOperacionFlotante("fmul");
+                        break;
+                }
                 break;
             case "=:":
-                generarAsignacion();
+                switch(tipo){
+                    case "I8":
+                        generarAsignacion();
+                        break;
+                    case "F32":
+                        generarAsignacionFlotante();
+                        break;
+                }
                 break;
             case "<":
                 generarComparacion("jl");
@@ -139,6 +191,9 @@ public class GeneradorCodigo{
                 break;
             case "=":
                 generarComparacion("je");
+                break;
+            case "=!":
+                generarComparacion("jne");
                 break;
             case "BI":
                 generarSaltoIncondicional();
@@ -158,12 +213,55 @@ public class GeneradorCodigo{
         }
     }
 
+    public static void generarAsignacionFlotante(){
+        if(value3!=null && value3.startsWith("[")){
+            assembler.append("fst "+ value2+"\n");
+        }else {
+            assembler.append("fld "+ value3+"\n");
+            assembler.append("fst "+ value2+"\n");
+        }
+
+    }
+
+    public static void generarOperacionFlotante(String op){
+        if(value2!=null && value2.startsWith("[")){
+            if(value3!=null && value3.startsWith("[")){
+                assembler.append(op+"\n");
+            }else assembler.append(op+" "+value3+"\n");
+        }else {
+            assembler.append("fld "+ value2+"\n");
+            assembler.append(op+" "+value3+"\n"); //segun las filminas fadd [mem] hace la suma de st(0) y el valor
+        }
+
+    }
+
+    public static void generarComparacionFlotante(String comp){
+        if(value2!=null && value2.startsWith("[")){
+            if(value3!=null && value3.startsWith("[")){
+                assembler.append("fcomp \n");
+            }
+            else
+                assembler.append("fcomp " + value3+"\n");
+        }
+        else{
+            if(value3!=null && value3.startsWith("[")){
+                assembler.append("fcomp "+value2+"\n");
+            }
+            else{
+                assembler.append("fld "+ value2+"\n");
+                assembler.append("fcomp " + value3+"\n");
+            }
+        }
+        assembler.append(comp+" ");
+    }
+
     public static void generarConversion(){
         if(value2!=null){
             Terceto terceto=estructuraActual.getTerceto(Integer.valueOf(value2.substring(1, value2.length()-1)));
             String registro=terceto.getRegistro();
-            tercetoActual.setRegistro(getRegistroConversion(registro));
-            //assembler.append("mov "+tercetoActual.getRegistro()+", "+registro);
+            assembler.append("mov @conv, "+getRegistroConversion(registro)+"\n");
+            assembler.append("cbw \n");
+            assembler.append("fild @conv \n");
         }
     }
 
@@ -196,19 +294,31 @@ public class GeneradorCodigo{
             numTerceto1=Integer.valueOf(value2.substring(1, value2.length()-1));
             t1= estructuraActual.getTerceto(numTerceto1);
             registro1=t1.getRegistro();
+            if ((op.equals("idiv")) || (op.equals("imul"))){
+                liberarRegistro(registro1);
+                registro1 = "al";
+                t1.setRegistro("al");
+                registros.put("eax",true);
+            }
+
             assembler.append(op+ " "+ registro1+", ");
             tercetoActual.setRegistro(registro1);
 
             assembler.append(value3+"\n");
         }
         else{
-            asignarRegistroTerceto();
+            if ((op.equals("idiv")) || (op.equals("imul"))){
+                registro1 = "al";
+                tercetoActual.setRegistro(registro1);
+                registros.put("eax",true);
+            }else asignarRegistroTerceto();
+
             assembler.append("mov "+tercetoActual.getRegistro()+", "+value2+"\n");
             assembler.append(op+" "+tercetoActual.getRegistro()+", "+value3+"\n");
         }
         if(value1!=null && value1.equals("+")){
-            assembler.append("cmp "+tercetoActual.getRegistro()+", "+"128 \n");
-            assembler.append("jge "+"OVERFLOW_ENTERO"+"\n");
+            
+            assembler.append("jo "+"OVERFLOW_ENTERO"+"\n");
         }
     }
 
@@ -228,8 +338,8 @@ public class GeneradorCodigo{
             asignarRegistroTerceto();
             assembler.append("mov "+ tercetoActual.getRegistro()+", " +value3+ "\n");
             assembler.append("mov "+value2+", "+tercetoActual.getRegistro()+"\n");
-            assembler.append("mov ah, 02h \n");
-            assembler.append("int 21h \n");
+            //assembler.append("mov ah, 02h \n");
+            //assembler.append("int 21h \n");
             liberarRegistro(tercetoActual.getRegistro());
         }
     }
@@ -309,6 +419,14 @@ public class GeneradorCodigo{
                 }
     }
 
+
+    public static void verificarRegistroVariableAuxiliar(){
+        String registro=tercetoActual.getRegistro();
+        if((registro!=null) && (registro.startsWith("@"))){
+
+        }
+    }
+
     public static void asignarRegistroTerceto(){
         String tipo=tercetoActual.getTipo();
         if(tipo!=null && tipo.equals("I8")){
@@ -316,14 +434,14 @@ public class GeneradorCodigo{
         }
         else
             if(tipo!=null && tipo.equals("F32")){
-                tercetoActual.setRegistro(getRegistroDisponible(32));
+                tercetoActual.setRegistro("st(0)");
             }
         
     }
 
+
     public static String getRegistroDisponible(int cantBits){
         String registro="";
-        
         if(!registros.get("ebx")){
             registros.put("ebx", true);
             registro="ebx";
@@ -334,8 +452,12 @@ public class GeneradorCodigo{
                 registro="ecx";
             }
             else{
-                assembler.append("mov @aux1, ecx");
+                assembler.append("mov @aux1, ecx \n");
                 registro="ecx";
+                Terceto terceto=estructuraActual.ultimoTercetoConRegistro("ecx|ex|el", numTercetoActual);
+                if(terceto!=null){
+                    terceto.setRegistro("@aux1");
+                }
             }
         
         }
@@ -429,6 +551,9 @@ public class GeneradorCodigo{
             //impresion.append("invoke StdOut, addr ID\n");
             //impresion.append("invoke StdOut, addr "+cambiarFormato(s.getLexema())+"\n");
         }
+        assembler.append("@aux1"+" dd "+ "? \n");
+        assembler.append("@conv"+" dd "+ "? \n");
+        
         assembler.append("ID db \"ID:\" \n");
        //assembler.append("CONST db \"Constante:\" \n");
         assembler.append("msj_exc1 db \"Exception: Resultado de suma entre enteros excede el rango permitido\" \n");
@@ -470,9 +595,7 @@ public class GeneradorCodigo{
 
     public static void generarExcepciones(){
         assembler.append("OVERFLOW_ENTERO: ");
-        chequearYgenerarExcepcionOverflowEnteroConSigno();
-        //assembler.append("OVERFLOW_ENTERO_SIN_SIGNO: ");
-        //chequearYgenerarExcepcionOverflowEnteroSinSigno();
+        chequearYgenerarExcepcionOverflowEntero();
         assembler.append("OVERFLOW_FLOTANTE: ");
         chequearYgenerarExcepcionOverflowFlotante();
         assembler.append("RECURSION_MUTUA: ");
@@ -480,26 +603,23 @@ public class GeneradorCodigo{
 
     }
 
-    public static void chequearYgenerarExcepcionOverflowEnteroSinSigno(){
+    public static void chequearYgenerarExcepcionOverflowEntero(){
         assembler.append("invoke StdOut, addr msj_exc1 \n");
-        assembler.append("invoke ExitProcess, 0 \n");
-        assembler.append("ret \n");
-    }
-
-    public static void chequearYgenerarExcepcionOverflowEnteroConSigno(){
-        assembler.append("invoke StdOut, addr msj_exc1 \n");
+        assembler.append("jmp end_program\n");
         assembler.append("invoke ExitProcess, 0 \n");
         assembler.append("ret \n");
     }
 
     public static void chequearYgenerarExcepcionOverflowFlotante(){
         assembler.append("invoke StdOut, addr msj_exc2 \n");
+        assembler.append("jmp end_program\n");
         assembler.append("invoke ExitProcess, 0 \n");
         assembler.append("ret \n");
     }
 
     public static void chequearYgenerarExcepcionRecursionMutua(){
         assembler.append("invoke StdOut, addr msj_exc3 \n");
+        assembler.append("jmp end_program\n");
         assembler.append("invoke ExitProcess, 0 \n");
         assembler.append("ret \n");
     }

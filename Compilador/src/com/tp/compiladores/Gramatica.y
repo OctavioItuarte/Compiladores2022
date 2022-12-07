@@ -436,9 +436,9 @@ ParametroReal: cte {parametrosReales.add($1.sval);}
              ;
 
 ConversionExplicita: TOF32 '(' Expresion ')' {if (conversionValida()){
-												
-												estructuraActual.crearTerceto("=:","conv", $3.sval);
-												estructuraActual.crearTerceto("tof32", $3.sval, null);
+											    
+												//estructuraActual.crearTerceto("=:","@conv", $3.sval); //variable auxiliar
+												estructuraActual.crearTerceto("tof32", estructuraActual.getRefTerceto(1), null);
 												estructuraActual.getTerceto(estructuraActual.cantTercetos()-1).setTipo("F32");
 											  }
 												else errores_semanticos.add(new ErrorLinea("No se puede realizar la conversion", linea.getNumeroLinea()));

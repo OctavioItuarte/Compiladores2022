@@ -3,14 +3,15 @@ ee{
     i8 num;
     num=:0; d=:0; q=:0; i=:0; c=:0; t=:0; n=:0;
     fun awf(i8 num): f32{
-        num=:120;
+        num=:120+120;
         f32 q;
         return(q);
     }
     
     fun aa(i8 num): f32{
         const u=: 100;
-        out('holaaaaa');
+        out('Impresion desde \
+        funcion aa');
         i8 m;
         m=:120;
         f32 r;

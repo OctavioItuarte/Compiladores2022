@@ -1,0 +1,41 @@
+ee{
+    i8 d , q , i , c,t,n;
+    i8 num;
+    num=:0; d=:0; q=:0; i=:0; c=:0; t=:0; n=:0;
+    fun bb(i8 num): f32{
+        num=:120;
+        num=:cc(3.0);
+        out('Impresion desde /
+funcion bb');
+        return(q);
+    }
+
+    fun aa(i8 num): f32{
+        const u=: 100;
+        out('Impresion desde /
+funcion aa');
+        u=:cc(0.0);
+        fun cc(f32 x): i8{
+            return(45);
+        }
+        i8 m;
+        f32 g;
+        m=:cc(g);
+        m=:cc(1);
+        m=:cc(g,1);
+        f32 r;
+        if(num -3< m/i) then{
+            n=: 120;
+            return(r);
+        }
+        else
+            m=: i;
+        end_if
+        return(tof32(2+1));
+    }
+
+    f32 w;
+    w=:tof32(q+5);
+    w=:aa(0);
+
+}

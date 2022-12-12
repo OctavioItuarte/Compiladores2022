@@ -6,6 +6,7 @@ public class EstructuraTercetos {
     private List<Terceto> listTercetos = new ArrayList<>();
     private String nombre;
 
+
     private String tipo; //guarda el tipo de la lista de id que se estan declarando
 
     private Stack<Integer> numTercetosCondicionFor = new Stack<>();
@@ -32,7 +33,9 @@ public class EstructuraTercetos {
 
     private List<Terceto> tercetosWhen = new ArrayList<>();
     //public List<ErrorLinea> errores_semanticos;
- 
+
+
+
     public EstructuraTercetos(String nombre) {
         this.nombre=nombre;
         //this.errores_semanticos=errores_semanticos;

@@ -1,9 +1,7 @@
 package com.tp.compiladores;
 
-import java.util.List;
 
 public class AccionSemantica9 extends AccionSemantica{
-    private TokenSimbolos tipos;
 
     public AccionSemantica9() {
         super.lexema = null;

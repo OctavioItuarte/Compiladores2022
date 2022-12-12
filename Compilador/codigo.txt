@@ -2,21 +2,29 @@ ee{
     i8 d , q , i , c,t,n;
     i8 num;
     num=:0; d=:0; q=:0; i=:0; c=:0; t=:0; n=:0;
-    fun awf(i8 num): f32{
+    f32 f;
+    fun bb(i8 num): f32{
         num=:120+120;
-        f32 q;
-        return(q);
+
+        out('Impresion desde /
+funcion bb');
+        return(-3.0);
     }
-    
+
     fun aa(i8 num): f32{
         const u=: 100;
-        out('Impresion desde \
-        funcion aa');
+        out('Impresion desde /
+funcion aa');
+        fun cc(f32 x): i8{
+            <<f=:aa(0);
+            return(45);
+        }
         i8 m;
-        m=:120;
+        f32 g;
+        m=:cc(g);
         f32 r;
-        if(num -3+1+3< m+i) then{
-            n=: 120;
+        if(num/3/1< m/i/1) then{
+            n=: 120+120;
             return(r);
         }
         else
@@ -42,7 +50,7 @@ ee{
                 break -2;
                 d=:d;
             }
-            
+
             <<else 1;
         }
         if(t < 3) then{
@@ -56,11 +64,11 @@ ee{
             break;
             }
         end_if
-        
+
     }
     else 1;
     f32 w;
-    w=:tof32(q+5);
+    w=:tof32(q/5+1);
     w=:aa(0);
-    
+
 }

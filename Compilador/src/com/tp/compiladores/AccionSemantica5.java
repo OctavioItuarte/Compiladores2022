@@ -1,6 +1,5 @@
 package com.tp.compiladores;
 
-import java.util.List;
 
 public class AccionSemantica5 extends AccionSemantica{
 

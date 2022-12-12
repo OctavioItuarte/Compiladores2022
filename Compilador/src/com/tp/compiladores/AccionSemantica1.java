@@ -1,6 +1,5 @@
 package com.tp.compiladores;
 
-import java.util.List;
 
 public class AccionSemantica1 extends AccionSemantica{
 	//esta accion concatena los simbolos con los anteriores 

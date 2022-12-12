@@ -1,11 +1,9 @@
 package com.tp.compiladores;
 
-import java.util.*;
-
 public class AnalizadorLexico {
 
 	private static int[][] matrizDeTransicion= new int[][] {     //////
-		{1,	2,	5,	6,	102,	-1,	7,	8,	102,102,	102,102,102,0,	0,	0,	-1,	11,	-1,0},
+		{1,	2,	5,	6,	102,-1,	7,	8,	102,102,	102,102,102,0,	0,	0,	-1,	11,	-1,0},
 		{1,	1,	102,102,102,1,102,102,102,102,102,102,102,102,102,102,102,102,102,1},
 		{102,2,	3,	102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,2},
 		{4,	3,	102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,3},
@@ -43,7 +41,7 @@ public class AnalizadorLexico {
 		{AS6,	AS6,	AS6,	AS5,	AS6,	AS6,	AS6,	AS8,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS8},
 		{AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8},
 		{AS6,	AS1,	AS1,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS6,	AS8},
-		{AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS8,	AS1,	AS8,	AS8,	AS8,	AS2,	AS9,	AS2,	AS8},
+		{AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS1,	AS8,	AS1,	AS1,	AS1,	AS8,	AS1,	AS9,	AS8,	AS8},
 		{AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8},
 		{AS8,	AS1,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8,	AS8},
 		{AS4,	AS1,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS4,	AS8}
@@ -75,11 +73,12 @@ public class AnalizadorLexico {
 			lexema = AS.getLexema();
 			posicion = AS.getPosicion();
 			estado = matrizDeTransicion[estado][columna];
+			//System.out.println(lexema);
 		}
 		if (estado  == -1){
-			System.out.println(" Linea: " + Parser.linea + " Error: simbolo no reconocido");
+			System.out.println(" Linea: " + Parser.linea.getNumeroLinea() + " Error: simbolo no reconocido");
 		}
-		System.out.println("asdf");
+		
 		return new Simbolo(lexema, valor);
 	}
 

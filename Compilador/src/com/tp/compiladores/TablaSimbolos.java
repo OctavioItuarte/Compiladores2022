@@ -12,7 +12,15 @@ public class TablaSimbolos{
         this.linea=linea;
         tabla=new HashMap<>();
     }
-
+    public List<Simbolo> getNumerosFlotantes(){
+        List<Simbolo> resultado=new ArrayList<>();
+        for(Map.Entry<String, Simbolo> entry : tabla.entrySet()){
+            if(entry.getValue().getUso().equals("valor_numerico") && entry.getValue().getTipo().equals("F32")){
+                resultado.add(entry.getValue());
+            }
+        }
+        return resultado;
+    }
     public List<String> getNumeros(){
         List<String> resultado=new ArrayList<>();
         for(Map.Entry<String, Simbolo> entry : tabla.entrySet()){
@@ -75,7 +83,7 @@ public class TablaSimbolos{
 
     private String cambiarAmbito(String[] ambitos, int n){
         String resultado=ambitos[0];
-        for(int i=1; i<n; i++){
+        for(int i=1; i<=n; i++){
             resultado=resultado+":"+ambitos[i];
         }
         return resultado;
@@ -86,12 +94,12 @@ public class TablaSimbolos{
         if((lexema!=null)&&(ambito!=null)){
             String [] ambitos = ambito.split(":");
             String [] lex = lexema.split(":");
-            
-            for (int i = ambitos.length; i > 0; i--){
+
+            for (int i = ambitos.length-1; i >= 0; i--){
                 //System.out.println("ambito comparado"+ var);
                 String ambitoNuevo=this.cambiarAmbito(ambitos, i);
                 if (tabla.containsKey(lex[0]+":"+ambitoNuevo)){
-                    //System.out.println("variable por la que busco"+ lex[0]+":"+var);
+                    //System.out.println("variable por la que busco"+ lex[0]+":"+ambitoNuevo);
                     return lex[0]+":"+ambitoNuevo;
                 }
             }
@@ -108,19 +116,19 @@ public class TablaSimbolos{
     public String getUso(String lexema){
         if((lexema!=null) && (tabla.containsKey(lexema)))
             return(tabla.get(lexema).getUso());
-        return null;
+        return "";
     }
 
     public String getValor(String lexema){
         if((lexema!=null) && (tabla.containsKey(lexema)))
             return(tabla.get(lexema).getValor());
-        return null;
+        return "";
     }
 
     public String getTipo(String lexema){
         if((lexema!=null) && (tabla.containsKey(lexema)))
             return(tabla.get(lexema).getTipo());
-        return null;
+        return "";
     }
 
     public void setTipo(String lexema, String tipo){
@@ -150,29 +158,22 @@ public class TablaSimbolos{
         String existe=existeSimboloAmbito(lexema, ambito);
         // debe buscar el simbolo en la tabla en dicho ambito.
         if((existe!=null) && (tabla.get(existe).getUso().equals("identificador_funcion"))){
-            
-            String [] lex = existe.split(":");
-            String resultado="";
-            for(int i=1; i<lex.length;i++){
-                resultado=resultado.concat(lex[i]+":");
-            }
-            resultado=resultado.concat(lex[0]);
-            
-            return (resultado);
+            return (existe);
         }
         else{
             System.out.println("Funcion " + lexema +" no declarada");
             ErrorLinea err=new ErrorLinea("Funcion " + lexema +" no declarada", this.linea.getNumeroLinea());
             erroresSemanticos.add(err);
         }
-        return null;
+        return "";
     }
 
     public String getRefSimbolo(String lexema, String ambito){ //devuelve el lexema al simbolo en la tabla
         String existe=existeSimboloAmbito(lexema, ambito);
-        if(existe!=null)
-        // debe buscar el simbolo en la tabla en dicho ambito.
+        if(existe!=null) {
+            // debe buscar el simbolo en la tabla en dicho ambito.
             return (existe);
+        }
         else{
             System.out.println("Variable " + lexema +" no declarada");
             ErrorLinea err=new ErrorLinea("Variable " + lexema +" no declarada", this.linea.getNumeroLinea());

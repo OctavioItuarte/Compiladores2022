@@ -16,10 +16,8 @@ b_ee dd ?
 a_ee dd ?
 @afuera_$_ db "afuera - ", 0
 @a_es_1@0_$_ db "a es 1.0 - ", 0
-@putooo_$_ db "putooo - ", 0
 @bien_la_multiplicacion_$_ db "bien la multiplicacion - ", 0
 @a_es_2@0_$_ db "a es 2.0 - ", 0
-@qbslcdll_$_ db "qbslcdll - ", 0
 i_ee_multiplicacion db ?
 multiplicacion_ee db ?
 w_ee db ?
@@ -120,15 +118,5 @@ jnz OVERFLOW_FLOTANTE
 fst a_ee
 fld @varFloat3@3F?38
 fst a_ee
-invoke StdOut, addr @qbslcdll_$_
-fld a_ee
-fadd a_ee
-fstsw stword
-fwait 
-and ax, 8h 
-cmp ax, 8h 
-jnz OVERFLOW_FLOTANTE
-fst a_ee
-invoke StdOut, addr @putooo_$_
 finit 
 END START

@@ -31,8 +31,5 @@ ee{
     a=:a+a;
 
     a=:3.3F+38;
-    out('qbslcdll - ');
-    a=:a+a;
-
-    out('putooo - ');
+    
 }

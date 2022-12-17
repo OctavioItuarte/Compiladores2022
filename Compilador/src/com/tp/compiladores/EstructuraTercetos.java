@@ -78,6 +78,7 @@ public class EstructuraTercetos {
 
     ////////////////////////////////////////////////////////////////////////////////////
     public void addRefEtiqueta(String terceto){ // asocio la etiqueta a el lugar donde debo saltar
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         if(!etiquetasFor.isEmpty()){
             String etiqueta= etiquetasFor.get(etiquetasFor.size()-1);
             if((terceto!=null) && (refEtiquetasFor.get(etiqueta)==null))
@@ -88,22 +89,26 @@ public class EstructuraTercetos {
     }
 
     public void addEtiquetaFor(String e){ //agrego la etiqueta
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         this.etiquetasFor.add(e);
     }
 
     public boolean existeEtiquetaFor(String e){
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         if ((e!=null) && (etiquetasFor.contains(e)))
             return true;
-        else return false;
+        return false;
     }
 
     public String getRefEtiqueta(String etiqueta){
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         if(etiqueta!=null)
             return refEtiquetasFor.get(etiqueta);
         return null;
     }
 
     public void eliminarEtiqueta(){
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         if(!etiquetasFor.isEmpty()){
             String ultimaEtiqueta=etiquetasFor.get(etiquetasFor.size()-1);
             if(refEtiquetasFor.containsKey(ultimaEtiqueta))
@@ -116,15 +121,18 @@ public class EstructuraTercetos {
     ////////////////////////////////////////////////////////////////////////////////////
     
     public void guardarTercetoBreak(){
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         //guarda el ultimo terceto de listTercetos en la ultima lista de tercetosBreak
         //esta funcion debe ser invocada despues de crear el terceto BI para break;
         tercetosBreak.get(tercetosBreak.size()-1).add(this.getTerceto(listTercetos.size()-1));
     }
 
     public void completarTercetosBreak(int num){
-        String salto="[" + String.valueOf(this.cantTercetos()-1+num) + "]";
-        for(Terceto t: this.tercetosBreak.get(this.tercetosBreak.size()-1)){
-            t.setValor2(salto);
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse)){
+            String salto="[" + String.valueOf(this.cantTercetos()-1+num) + "]";
+            for(Terceto t: this.tercetosBreak.get(this.tercetosBreak.size()-1)){
+                t.setValor2(salto);
+            }
         }
     }
 
@@ -141,15 +149,18 @@ public class EstructuraTercetos {
     }
 ///////////////////////////////////////////////////////////////////////////////////////////////
     public void guardarTercetoBreakCte(){
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         //guarda el ultimo terceto de listTercetos en la ultima lista de tercetosBreakCte
         //esta funcion debe ser invocada despues de crear el terceto BI para break cte;
         this.tercetosBreakCte.get(this.tercetosBreakCte.size()-1).add(this.listTercetos.get(this.listTercetos.size()-1));
     }
 
     public void completarTercetosBreakCte(int num){
-        String salto="[" + String.valueOf(this.cantTercetos()-1+num) + "]";
-        for(Terceto t: this.tercetosBreakCte.get(this.tercetosBreakCte.size()-1)){
-            t.setValor2(salto);
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse)){
+            String salto="[" + String.valueOf(this.cantTercetos()-1+num) + "]";
+            for(Terceto t: this.tercetosBreakCte.get(this.tercetosBreakCte.size()-1)){
+                t.setValor2(salto);
+            }
         }
     }
 
@@ -171,17 +182,19 @@ public class EstructuraTercetos {
     }
 
     public void addIdAsigFor(String id){ //guarda el id usado en la asignacion seguida de una sentencia de control
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         this.listIdAsigFor.add(id);
     }
 
     public String getIdAsigFor(){
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         if(!this.listIdAsigFor.isEmpty())
             return this.listIdAsigFor.get(this.listIdAsigFor.size()-1);
-        else
-            return null;
+        return null;
     }
 ///////////////////////////////////////////////////////////////////////////////////////////
     public String getIdFor(){
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         if(!idsFor.isEmpty())
             return idsFor.get(idsFor.size()-1);
         return null;
@@ -235,6 +248,7 @@ public class EstructuraTercetos {
     }
 
     public void addNumCondicionFor(){
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         //guarda el numero de terceto de la condicion_for, posicion hacia donde salta la BI
         numTercetosCondicionFor.add(this.cantTercetos()-1);
     }
@@ -246,41 +260,49 @@ public class EstructuraTercetos {
     }
 
     public String getNumeroTercetoCondicionFor(){
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         if(!numTercetosCondicionFor.isEmpty())
             return String.valueOf(numTercetosCondicionFor.pop());
         return null;
     }
 //////////////////////////////////////////////////////////////////////
     public void completarTercetoIf(int num){
-        //completa los tercetos con BF de las condiciones IF
-        String salto="[" + String.valueOf(this.cantTercetos()-1+num) + "]";
-        if(!tercetosBFif.isEmpty()){
-            if(tercetosBFif.get(tercetosBFif.size()-1).getValor1().equals("BF"))
-                tercetosBFif.get(tercetosBFif.size()-1).setValor3(salto);
-            else 
-                tercetosBFif.get(tercetosBFif.size()-1).setValor2(salto);
-            tercetosBFif.remove(tercetosBFif.size()-1);
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse)){
+            //completa los tercetos con BF de las condiciones IF
+            String salto="[" + String.valueOf(this.cantTercetos()-1+num) + "]";
+            if(!tercetosBFif.isEmpty()){
+                if(tercetosBFif.get(tercetosBFif.size()-1).getValor1().equals("BF"))
+                    tercetosBFif.get(tercetosBFif.size()-1).setValor3(salto);
+                else 
+                    tercetosBFif.get(tercetosBFif.size()-1).setValor2(salto);
+                tercetosBFif.remove(tercetosBFif.size()-1);
+            }
         }
     }
 
     public void addTercetoIf(){
-        tercetosBFif.add(this.getTerceto(listTercetos.size()-1));
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
+            tercetosBFif.add(this.getTerceto(listTercetos.size()-1));
+        
     }
 
 //////////////////////////////////////////////////////////////////////
     public void completarTercetoFor(int num){
         //completa los tercetos con BF de las condiciones FOR
-        String salto="[" + String.valueOf(this.cantTercetos()-1+num) + "]";
-        if(!tercetosBFfor.isEmpty()){
-            if(tercetosBFfor.get(tercetosBFfor.size()-1).getValor1().equals("BI"))
-                tercetosBFfor.get(tercetosBFfor.size()-1).setValor2(salto);
-            else 
-                tercetosBFfor.get(tercetosBFfor.size()-1).setValor3(salto);
-            tercetosBFfor.remove(tercetosBFfor.size()-1);
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse)){
+            String salto="[" + String.valueOf(this.cantTercetos()-1+num) + "]";
+            if(!tercetosBFfor.isEmpty()){
+                if(tercetosBFfor.get(tercetosBFfor.size()-1).getValor1().equals("BI"))
+                    tercetosBFfor.get(tercetosBFfor.size()-1).setValor2(salto);
+                else 
+                    tercetosBFfor.get(tercetosBFfor.size()-1).setValor3(salto);
+                tercetosBFfor.remove(tercetosBFfor.size()-1);
+            }
         }
     }
     
     public void addTercetoFor(){
+        if((!Parser.dentroDeWhen) || (!Parser.condicionWhenFalse))
         tercetosBFfor.add(this.getTerceto(listTercetos.size()-1));
     }
 //////////////////////////////////////////////////////////////////////

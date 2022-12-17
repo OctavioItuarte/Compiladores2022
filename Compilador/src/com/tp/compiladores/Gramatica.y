@@ -57,10 +57,10 @@ ListCte : AsigCte
         ;
 
 
-AsigCte: ID ASIGNACION CTE_ENTERA { tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "I8", $3.sval));}
-	   | ID ASIGNACION signo CTE_ENTERA {tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "I8", $3.sval+$4.sval));}
-	   | ID ASIGNACION  CTE_FLOTANTE {tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "F32", $3.sval));}
-	   | ID ASIGNACION signo CTE_FLOTANTE {tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "F32", $3.sval+$4.sval));}
+AsigCte: ID ASIGNACION CTE_ENTERA { if((!dentroDeWhen) || (!condicionWhenFalse)) tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "I8", $3.sval));}
+	   | ID ASIGNACION signo CTE_ENTERA {if((!dentroDeWhen) || (!condicionWhenFalse)) tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "I8", $3.sval+$4.sval));}
+	   | ID ASIGNACION  CTE_FLOTANTE {if((!dentroDeWhen) || (!condicionWhenFalse)) tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "F32", $3.sval));}
+	   | ID ASIGNACION signo CTE_FLOTANTE {if((!dentroDeWhen) || (!condicionWhenFalse)) tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito, 269, "constante", "F32", $3.sval+$4.sval));}
 
 	   | ASIGNACION cte {AgregarErrorSintactico("Se espera un identificador");}
 	   | ID ASIGNACION  {AgregarErrorSintactico("Se espera una constante ");}
@@ -71,9 +71,9 @@ Tipo: I8 {estructuraActual.setTipo("I8");}
     | F32 {estructuraActual.setTipo("F32");}
     ;
 
-ListVariables: ID ',' ListVariables {tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito,269,"variable",estructuraActual.getTipo()));}
-			 | ID {tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito,269,"variable", estructuraActual.getTipo()));}
-			 | ID ListVariables {AgregarErrorSintactico("Se espera ',' ");}
+ListVariables: ID ',' ListVariables {if((!dentroDeWhen) || (!condicionWhenFalse)) tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito,269,"variable",estructuraActual.getTipo()));}
+			 | ID {if((!dentroDeWhen) || (!condicionWhenFalse)) tablaDeSimbolos.add(new Simbolo($1.sval+":"+ambito,269,"variable", estructuraActual.getTipo()));}
+			 | ID ListVariables {if((!dentroDeWhen) || (!condicionWhenFalse)) AgregarErrorSintactico("Se espera ',' ");}
              ;
 
 HeaderFuncion: Fun '(' Parametro ',' Parametro ')' ':' Tipo {tablaDeSimbolos.setTipo(funcionActual.get(0), estructuraActual.getTipo());
@@ -183,20 +183,23 @@ Asig: ID ASIGNACION Expresion ';'{String lex=tablaDeSimbolos.getRefSimbolo($1.sv
 	| ID error ';' {AgregarErrorSintactico("Se espera '=:'");}
 	;
 
-HeaderWhen: When Condicion THEN {chequearCondicionWhen();
+HeaderWhen: When Condicion THEN {if((!dentroDeWhen) || (!condicionWhenFalse))
+								chequearCondicionWhen();
 								}
 
 		  | Condicion THEN {AgregarErrorSintactico("Se espera un if o un when");}
 		  | When Condicion {AgregarErrorSintactico("Se espera la palabra reservada then");}
 		  ;
 
-When: WHEN {dentroDeWhen=true;
-			valores1.clear();
-			valores2.clear();
-			listOperadores1.clear();
-			listOperadores2.clear();
-			valores=valores1;
-			listOperadores=listOperadores1;
+When: WHEN {if((!dentroDeWhen) || (!condicionWhenFalse)){
+				dentroDeWhen=true;
+				valores1.clear();
+				valores2.clear();
+				listOperadores1.clear();
+				listOperadores2.clear();
+				valores=valores1;
+				listOperadores=listOperadores1;
+			}
 			}
 
 WhenCuerpo: HeaderWhen '{' ListSentencias '}' {estructuraActual.completarTercetoIf(1);

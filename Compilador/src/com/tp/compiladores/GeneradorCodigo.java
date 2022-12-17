@@ -103,8 +103,10 @@ public class GeneradorCodigo{
         assembler.append("include \\masm32\\include\\windows.inc\n");
         assembler.append("include \\masm32\\include\\kernel32.inc\n");
         assembler.append("include \\masm32\\include\\masm32.inc\n");
+        assembler.append("include \\masm32\\include\\user32.inc\n");
         assembler.append("includelib \\masm32\\lib\\kernel32.lib\n");
         assembler.append("includelib \\masm32\\lib\\masm32.lib\n");
+        assembler.append("includelib \\masm32\\lib\\user32.lib\n");
         assembler.append(".data\n");
         generarDatos();
         assembler.append(".CODE\n");
@@ -114,7 +116,7 @@ public class GeneradorCodigo{
         definirFunciones();
 
         assembler.append("START:\n");
-        
+        assembler.append("finit\n");
         
         estructuraActual= listEstructuraTercetos.get(0); 
         //toma la estructura de tercetos del programa principal
@@ -128,7 +130,7 @@ public class GeneradorCodigo{
             chequearYgenerarInstruccion();
         }
         //assembler.append(impresion.toString());
-        assembler.append("end_program:");
+        assembler.append("finit \n");
         assembler.append("END START");
 
         generarArchivo();
@@ -192,23 +194,65 @@ public class GeneradorCodigo{
                 }
                 break;
             case "<":
-                generarComparacion("jl");
+                switch(tipo){
+                    case "I8":
+                        generarComparacion("jge");
+                        break;
+                    case "F32":
+                        generarComparacionFlotante("jge");
+                        break;
+                }
                 break;
             case ">":
-                generarComparacion("jg");
-                break;
+            switch(tipo){
+                case "I8":
+                    generarComparacion("jle");
+                    break;
+                case "F32":
+                    generarComparacionFlotante("jle");
+                    break;
+            }
+            break;
             case "<=":
-                generarComparacion("jle");
-                break;
+            switch(tipo){
+                case "I8":
+                    generarComparacion("jg");
+                    break;
+                case "F32":
+                    generarComparacionFlotante("jg");
+                    break;
+            }
+            break;
             case ">=":
-                generarComparacion("jge");
-                break;
+            switch(tipo){
+                case "I8":
+                    generarComparacion("jl");
+                    break;
+                case "F32":
+                    generarComparacionFlotante("jl");
+                    break;
+            }
+            break;
             case "=":
-                generarComparacion("je");
-                break;
+            switch(tipo){
+                case "I8":
+                    generarComparacion("jne");
+                    break;
+                case "F32":
+                    generarComparacionFlotante("jne");
+                    break;
+            }
+            break;
             case "=!":
-                generarComparacion("jne");
-                break;
+            switch(tipo){
+                case "I8":
+                    generarComparacion("je");
+                    break;
+                case "F32":
+                    generarComparacionFlotante("je");
+                    break;
+            }
+            break;
             case "BI":
                 generarSaltoIncondicional();
                 break;
@@ -219,10 +263,11 @@ public class GeneradorCodigo{
                 generarConversion();
                 break;
             case "OUT":
-                assembler.append("invoke StdOut, addr "+reemplazarSimbolo(value2.substring(1, value2.length()-1))+"\n");
+                //assembler.append("invoke MessageBox, NULL, addr "+ reemplazarSimbolo(value2.substring(1, value2.length()-1))+", addr "+ reemplazarSimbolo(value2.substring(1, value2.length()-1)) +", MB_OK \n");
+                assembler.append("invoke StdOut, addr "+"@"+reemplazarSimbolo(value2.substring(1, value2.length()-1))+"\n");
                 break;
             default: //LABEL
-                assembler.append(value1+": ");
+                assembler.append(value1+": \n");
                 break;
         }
     }
@@ -231,7 +276,7 @@ public class GeneradorCodigo{
         if(value3!=null && value3.startsWith("[")){
             assembler.append("fst "+ value2+"\n");
         }else {
-            if((value3.startsWith("-")) || (value3.startsWith("+")) || (value3.matches("^[0-9]")) || (value3.startsWith("."))){
+            if((value3.startsWith("-")) || (value3.startsWith("+")) || (Character.isDigit(value3.charAt(0))) || (value3.startsWith("."))){
                 value3="@varFloat"+reemplazarSimbolo(value3);
             }
             assembler.append("fld "+ value3+"\n");
@@ -241,27 +286,33 @@ public class GeneradorCodigo{
 
     public static void generarOperacionFlotante(String op){
         
-        if((value3.startsWith("-")) || (value3.startsWith("+")) || (value3.matches("^[0-9]")) || (value3.startsWith(".")))
+        if((value3.startsWith("-")) || (value3.startsWith("+")) || (Character.isDigit(value3.charAt(0))) || (value3.startsWith(".")))
             value3="@varFloat"+reemplazarSimbolo(value3);
         if(value2!=null && value2.startsWith("[")){
             assembler.append(op+" "+value3+"\n");
         }
         else {
-            if((value2.startsWith("-")) || (value2.startsWith("+")) || (value2.matches("^[0-9]")) || (value2.startsWith(".")))
+            if((value2.startsWith("-")) || (value2.startsWith("+")) || (Character.isDigit(value2.charAt(0))) || (value2.startsWith(".")))
                 value2="@varFloat"+reemplazarSimbolo(value2);
             assembler.append("fld "+ value2+"\n");
             assembler.append(op+" "+value3+"\n"); //segun las filminas fadd [mem] hace la suma de st(0) y el valor
         }
-        assembler.append("FNSTSW ax \n");
-        assembler.append("jo "+"OVERFLOW_FLOTANTE"+"\n");
+        //assembler.append("FNSTSW ax \n");
+        assembler.append("fstsw stword\n");
+        //assembler.append("fstsw stword \n");
+        assembler.append("fwait \n");
+        assembler.append("and ax, 8h \n");
+        assembler.append("cmp ax, 8h \n");
+        //assembler.append("test stword, 8\n");
+        assembler.append("jnz "+"OVERFLOW_FLOTANTE"+"\n");
 
     }
 
     public static void generarComparacionFlotante(String comp){
-        if((value2.startsWith("-")) || (value2.startsWith("+")) || (value2.matches("^[0-9]")) || (value2.startsWith(".")))
+        if((value2.startsWith("-")) || (value2.startsWith("+")) || (Character.isDigit(value2.charAt(0))) || (value2.startsWith(".")))
             value2="@varFloat"+reemplazarSimbolo(value2);
-        if((value3.startsWith("-")) || (value3.startsWith("+")) || (value3.matches("^[0-9]")) || (value3.startsWith(".")))
-            value3="@varFloat"+value3;
+        if((value3.startsWith("-")) || (value3.startsWith("+")) || (Character.isDigit(value3.charAt(0))) || (value3.startsWith(".")))
+            value3="@varFloat"+reemplazarSimbolo(value3);
 
         if(value2!=null && value2.startsWith("[")){
             if(value3!=null && value3.startsWith("[")){
@@ -279,6 +330,9 @@ public class GeneradorCodigo{
                 assembler.append("fcomp " + value3+"\n");
             }
         }
+        assembler.append("FSTSW aux_mem_2bytes \n");
+        assembler.append("MOV AX , aux_mem_2bytes \n");
+        assembler.append("SAHF \n");
         assembler.append(comp+" ");
     }
 
@@ -318,10 +372,11 @@ public class GeneradorCodigo{
         int numTerceto1;
         Terceto t1;
         String registro1;
-        if(value3.matches("-|[+]|[0-9]")){
+        if((value3.startsWith("-")) || (value3.startsWith("+")) || (Character.isDigit(value3.charAt(0)))){
             assembler.append("mov @auxOpInt, "+value3+"\n");
             value3="@auxOpInt";
         }
+
         if(value2!=null && value2.startsWith("[")){
             numTerceto1=Integer.valueOf(value2.substring(1, value2.length()-1));
             t1= estructuraActual.getTerceto(numTerceto1);
@@ -574,7 +629,7 @@ public class GeneradorCodigo{
     public static String reemplazarSimbolo(String lexema){
         HashMap<String, String> mapa= new HashMap<>();
         mapa.put(":", "_");
-        mapa.put("+","/");
+        mapa.put("+","?");
         mapa.put(".","@");
         mapa.put("-","$");
         mapa.put(" ","_");
@@ -603,7 +658,7 @@ public class GeneradorCodigo{
         List<Simbolo> flotantes=Parser.tablaDeSimbolos.getNumerosFlotantes();
         
         for(Simbolo s:flotantes){
-            assembler.append("@varFloat"+reemplazarSimbolo(s.getLexema())+" dd "+s.getValor()+"\n");
+            assembler.append("@varFloat"+reemplazarSimbolo(s.getLexema())+" dd "+s.getLexema()+"\n");
         }
         for(Simbolo s: constantes){
             assembler.append(reemplazarSimbolo(s.getLexema())+" db "+ s.getValor()+"\n");
@@ -614,7 +669,7 @@ public class GeneradorCodigo{
             assembler.append(reemplazarSimbolo(s.getLexema())+" dd "+ "?"+ "\n");
         }
         for(Simbolo s: cadenas){
-            assembler.append(reemplazarSimbolo(s.getLexema().substring(1,s.getLexema().length()-1))+" db "+ "\""+s.getLexema().substring(1,s.getLexema().length()-1)+ "\""+ "\n");
+            assembler.append("@"+reemplazarSimbolo(s.getLexema().substring(1,s.getLexema().length()-1))+" db "+ "\""+s.getLexema().substring(1,s.getLexema().length()-1)+ "\", 0"+ "\n");
         }
         for(Simbolo s: idsEnteros){
             assembler.append(reemplazarSimbolo(s.getLexema())+" db "+ "?"+ "\n");
@@ -626,10 +681,12 @@ public class GeneradorCodigo{
         assembler.append("@conv"+" dd "+ "? \n");
         assembler.append("@auxOpInt db ?\n");
         assembler.append("ID db \"ID:\" \n");
+        assembler.append("aux_mem_2bytes dw ? \n");
+        assembler.append("stword dw ? \n");
        //assembler.append("CONST db \"Constante:\" \n");
-        assembler.append("msj_exc1 db \"Exception: Resultado de suma entre enteros excede el rango permitido\" \n");
-        assembler.append("msj_exc2 db \"Exception: Resultado de suma entre flotantes excede el rango permitido\" \n");
-        assembler.append("msj_exc3 db \"Exception: invocacion a funcion no permitida (invocacion mutua)\" \n");
+        assembler.append("msj_exc1 db \"Exception: Resultado de suma entre enteros excede el rango permitido\", 0 \n");
+        assembler.append("msj_exc2 db \"Exception: Resultado de suma entre flotantes excede el rango permitido\", 0 \n");
+        assembler.append("msj_exc3 db \"Exception: invocacion a funcion no permitida (invocacion mutua)\", 0 \n");
         for(EstructuraTercetos estructura: listEstructuraTercetos){
             assembler.append("FUNCION_"+reemplazarSimbolo(estructura.getNombre())+" db 0 \n");
         }
@@ -676,21 +733,18 @@ public class GeneradorCodigo{
 
     public static void chequearYgenerarExcepcionOverflowEntero(){
         assembler.append("invoke StdOut, addr msj_exc1 \n");
-        assembler.append("jmp end_program\n");
         assembler.append("invoke ExitProcess, 0 \n");
         assembler.append("ret \n");
     }
 
     public static void chequearYgenerarExcepcionOverflowFlotante(){
         assembler.append("invoke StdOut, addr msj_exc2 \n");
-        assembler.append("jmp end_program\n");
         assembler.append("invoke ExitProcess, 0 \n");
         assembler.append("ret \n");
     }
 
     public static void chequearYgenerarExcepcionRecursionMutua(){
         assembler.append("invoke StdOut, addr msj_exc3 \n");
-        assembler.append("jmp end_program\n");
         assembler.append("invoke ExitProcess, 0 \n");
         assembler.append("ret \n");
     }

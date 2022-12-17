@@ -37,7 +37,7 @@ public class AccionSemantica4 extends AccionSemantica {
 		}
 		try {
 			double number = Float.parseFloat(n);
-			super.lexema = n;
+			//super.lexema = n;
 			//System.out.println(number);
 			if( ( (number > 1.17549435E-38 ) && (number < 3.40282347E+38) )|| (number == 0.0) ){
 				//System.out.println("Constante punto flotante: "+ l+" "+ 268);

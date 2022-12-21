@@ -18,7 +18,7 @@ public class GeneradorCodigo{
     private static HashMap<String, Boolean> registros;
     private static HashMap<String, Boolean> registrosFloat;
     private static int numTercetoActual=0;
-    
+    private static int numLabel=200;
 
     //private static StringBuilder impresion=new StringBuilder();
 
@@ -33,7 +33,7 @@ public class GeneradorCodigo{
 
     public static void generarArchivo(){
         try {
-            String ruta = "filename.asm";
+            String ruta = "assemblerGenerado.asm";
             
             File file = new File(ruta);
             // Si el archivo no existe es creado
@@ -117,7 +117,8 @@ public class GeneradorCodigo{
 
         assembler.append("START:\n");
         assembler.append("finit\n");
-        
+        assembler.append("fwait\n");
+
         estructuraActual= listEstructuraTercetos.get(0); 
         //toma la estructura de tercetos del programa principal
         //se asume que se encuentra en la primera posicion de la lista
@@ -131,12 +132,12 @@ public class GeneradorCodigo{
         }
         //assembler.append(impresion.toString());
         assembler.append("finit \n");
+        assembler.append("fwait\n");
+
         assembler.append("END START");
 
         generarArchivo();
     }
-
-    
 
     public static void chequearYgenerarInstruccion(){
         //resetearRegistros();
@@ -263,7 +264,6 @@ public class GeneradorCodigo{
                 generarConversion();
                 break;
             case "OUT":
-                //assembler.append("invoke MessageBox, NULL, addr "+ reemplazarSimbolo(value2.substring(1, value2.length()-1))+", addr "+ reemplazarSimbolo(value2.substring(1, value2.length()-1)) +", MB_OK \n");
                 assembler.append("invoke StdOut, addr "+"@"+reemplazarSimbolo(value2.substring(1, value2.length()-1))+"\n");
                 break;
             default: //LABEL
@@ -273,42 +273,46 @@ public class GeneradorCodigo{
     }
 
     public static void generarAsignacionFlotante(){
+        
         if(value3!=null && value3.startsWith("[")){
-            assembler.append("fst "+ value2+"\n");
+            assembler.append("fstp "+ value2+"\n");
         }else {
             if((value3.startsWith("-")) || (value3.startsWith("+")) || (Character.isDigit(value3.charAt(0))) || (value3.startsWith("."))){
                 value3="@varFloat"+reemplazarSimbolo(value3);
             }
             assembler.append("fld "+ value3+"\n");
-            assembler.append("fst "+ value2+"\n");
+            assembler.append("fstp "+ value2+"\n");
         }
+        
     }
 
     public static void generarOperacionFlotante(String op){
-        
+        assembler.append("FINIT \n");
+        assembler.append("FWAIT \n");
         if((value3.startsWith("-")) || (value3.startsWith("+")) || (Character.isDigit(value3.charAt(0))) || (value3.startsWith(".")))
             value3="@varFloat"+reemplazarSimbolo(value3);
         if(value2!=null && value2.startsWith("[")){
-            assembler.append(op+" "+value3+"\n");
+            assembler.append("fld "+value3+"\n");
+            assembler.append(op+"\n");
         }
         else {
-            if((value2.startsWith("-")) || (value2.startsWith("+")) || (Character.isDigit(value2.charAt(0))) || (value2.startsWith(".")))
-                value2="@varFloat"+reemplazarSimbolo(value2);
-            assembler.append("fld "+ value2+"\n");
-            assembler.append(op+" "+value3+"\n"); //segun las filminas fadd [mem] hace la suma de st(0) y el valor
-        }
-        //assembler.append("FNSTSW ax \n");
-        assembler.append("fstsw stword\n");
-        //assembler.append("fstsw stword \n");
-        assembler.append("fwait \n");
-        assembler.append("and ax, 8h \n");
-        assembler.append("cmp ax, 8h \n");
-        //assembler.append("test stword, 8\n");
-        assembler.append("jnz "+"OVERFLOW_FLOTANTE"+"\n");
+            if ((value2.startsWith("-")) || (value2.startsWith("+")) || (Character.isDigit(value2.charAt(0))) || (value2.startsWith(".")))
+                value2 = "@varFloat" + reemplazarSimbolo(value2);
+            assembler.append("fld " + value2 + "\n");
+            assembler.append("fld " + value3 + "\n");
 
+            assembler.append(op + "\n"); //segun las filminas fadd [mem] hace la suma de st(0) y el valor
+        }
+
+        assembler.append("FNSTSW stword \n");
+        assembler.append("and stword, 8\n");
+        assembler.append("jnz OVERFLOW_FLOTANTE \n");
+
+    
     }
 
     public static void generarComparacionFlotante(String comp){
+        
         if((value2.startsWith("-")) || (value2.startsWith("+")) || (Character.isDigit(value2.charAt(0))) || (value2.startsWith(".")))
             value2="@varFloat"+reemplazarSimbolo(value2);
         if((value3.startsWith("-")) || (value3.startsWith("+")) || (Character.isDigit(value3.charAt(0))) || (value3.startsWith(".")))
@@ -323,7 +327,9 @@ public class GeneradorCodigo{
         }
         else{
             if(value3!=null && value3.startsWith("[")){
-                assembler.append("fcomp "+value2+"\n");
+                assembler.append("fstp @aux1Float \n");
+                assembler.append("fld "+value2+"\n");
+                assembler.append("fcomp @aux1Float \n");
             }
             else{
                 assembler.append("fld "+ value2+"\n");
@@ -683,10 +689,14 @@ public class GeneradorCodigo{
         assembler.append("ID db \"ID:\" \n");
         assembler.append("aux_mem_2bytes dw ? \n");
         assembler.append("stword dw ? \n");
-       //assembler.append("CONST db \"Constante:\" \n");
+        assembler.append("aux_stword dw ? \n");
+        assembler.append("maximoFloat dd 3.40282347F+38 \n");
+        assembler.append("oldcw dw ?\n");
+        //assembler.append("CONST db \"Constante:\" \n");
         assembler.append("msj_exc1 db \"Exception: Resultado de suma entre enteros excede el rango permitido\", 0 \n");
         assembler.append("msj_exc2 db \"Exception: Resultado de suma entre flotantes excede el rango permitido\", 0 \n");
         assembler.append("msj_exc3 db \"Exception: invocacion a funcion no permitida (invocacion mutua)\", 0 \n");
+        
         for(EstructuraTercetos estructura: listEstructuraTercetos){
             assembler.append("FUNCION_"+reemplazarSimbolo(estructura.getNombre())+" db 0 \n");
         }

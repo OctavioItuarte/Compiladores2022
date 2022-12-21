@@ -1,0 +1,21 @@
+program{
+    fun aa(i8 a): f32{
+        return(tof32(a+2));
+    }
+    const u=:5.0;
+    i8 a,b,c,d;
+    a=:0; b=:0; c=:0; d=:0;
+
+    e=:0;
+
+    a=:aa(a);
+
+    i8 b;
+
+    u=:8;
+
+    fun aa(): i8{
+        return(0);
+    }
+
+}

@@ -66,6 +66,6 @@ public class Terceto {
     }
 
     public void imprimir(){
-        System.out.println("("+valor1+","+valor2+","+valor3+")"+"  -  Tipo: "+this.tipo);
+        System.out.println("("+valor1+","+valor2+","+valor3+")");
     }
 }

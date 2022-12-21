@@ -1,0 +1,70 @@
+program{
+    fun multiplicacion(i8 i, i8 j):i8{
+        return(i*j);
+    }
+
+    i8 mult; mult=:multiplicacion(5,5);
+    if(mult=!25)then
+        out('mult no es 25 - ');
+    else
+        out('mult es 25 - ');
+    end_if
+
+    i8 i, a, j;
+    i8 counter; counter=:0;
+    a=:for(i=:0; i<3; +1){
+        aaa:for(j=:0; j<3;+1){
+            out('dentro de for 2 - ');
+            if(counter=0)then{
+                out('counter es 0 - ');
+                continue:aaa;
+            }
+            end_if
+            out('salida del for 2 - ');
+            counter=:counter+1;
+        }
+        break 2;
+    }    
+    else 1;
+
+    if(a=1)then
+        out('a es 1 - ');
+    end_if
+
+    if(a=2)then
+        out('a es 2 - ');
+    end_if
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    const b =: 5, c =: 1;
+    f32 aux; aux=:0.0;
+    when(c<b+1)then{
+        if(c<b)then{
+            aux =: tof32(c+b);
+            out('Se hizo /
+ la conversion - ');
+        }
+        end_if
+    }
+    
+    i8 jj;
+    jj =:4;
+    if (jj = 3)then
+        aux =: aux + 1.2F5;
+    else {
+        out ('jj no /
+es 3 - ');
+        jj =: jj + 6 * 2 / 3;
+    }
+    end_if
+
+    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    j=:80;
+    if(j=80)then
+        out('j es igual a 80 - ');
+    end_if
+    i=:120+j;
+
+    if(i>120)then
+        out('i es mayor a 120 - ');
+    end_if
+}

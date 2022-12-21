@@ -500,7 +500,7 @@ Else: ELSE {estructuraActual.completarTercetoIf(2);
 			estructuraActual.addTercetoIf();
 			estructuraActual.crearTerceto("LABEL"+cantLabel, null, null);
 			
-					 cantLabel++;
+			cantLabel++;
 			}
 	;
 
@@ -1071,8 +1071,8 @@ public static String ambito = "";
 
 
     public static void chequearRangoEntero(String entero){
-            int number = Integer.parseInt("-"+entero);
-            if(number<-128){
+            int number = Integer.parseInt("+"+entero);
+            if(number>128){
                 ErrorLinea err=new ErrorLinea("Constante entera fuera de rango", linea.getNumeroLinea());
                 errores_lexicos.add(err);
             }

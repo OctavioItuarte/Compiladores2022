@@ -838,7 +838,7 @@ public static String ambito = "";
 
 	public static void main(String[] args) {
 	    try{
-	        input = new String(Files.readAllBytes(Paths.get("codigo.txt")));
+	        input = new String(Files.readAllBytes(Paths.get("codigoFuncional.txt")));
 	        AnalizadorLexico.addInput(input);
 			Parser parser= new Parser();
     		System.out.println("parse: "+parser.yyparse());
@@ -888,8 +888,8 @@ public static String ambito = "";
 
 
     public static void chequearRangoEntero(String entero){
-            int number = Integer.parseInt("-"+entero);
-            if(number<-128){
+            int number = Integer.parseInt("+"+entero);
+            if(number>128){
                 ErrorLinea err=new ErrorLinea("Constante entera fuera de rango", linea.getNumeroLinea());
                 errores_lexicos.add(err);
             }
